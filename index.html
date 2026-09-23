@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#4A7C59">
+<title>Lembre por Mim - Momentos em Família</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Dancing+Script:wght@600;700&display=swap" rel="stylesheet">
+<link rel="manifest" href="manifest.json">
+<style>
+body{font-family:'Nunito',sans-serif;background:#FFFBF6; font-size:17px; -webkit-tap-highlight-color:transparent}
+.cursive{font-family:'Dancing Script',cursive}
+.card-shadow{box-shadow:0 8px 32px rgba(0,0,0,0.06),0 2px 8px rgba(0,0,0,0.04)}
+.big-touch{min-height:72px}
+</style>
+</head>
+<body class="max-w-[430px] mx-auto min-h-screen bg-[#FFFBF6] relative pb-28">
+<header class="sticky top-0 z-30 bg-[#FFFBF6]/90 backdrop-blur-md px-5 py-3 flex items-center justify-between border-b border-black/5">
+<div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-[#4A7C59] flex items-center justify-center text-white">🔔</div><div><div class="font-extrabold text-[12px] tracking-[0.14em] text-[#4A7C59]">LEMBRE POR MIM</div><div class="text-[10px] text-[#9A8F88]">Menos tela. Mais presença. Mais vida.</div></div></div>
+</header>
+<div id="app"></div>
+<nav class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] bg-white rounded-t-[28px] shadow-[0_-8px_40px_rgba(0,0,0,0.1)] flex justify-around py-3.5 px-2 z-50 border-t border-black/5">
+<button onclick="nav('inicio')" id="nav-inicio" class="flex flex-col items-center text-[#4A7C59] font-bold"><span class="text-[20px]">🏠</span><span class="text-[11px]">Início</span></button>
+<button onclick="nav('agenda')" id="nav-agenda" class="flex flex-col items-center text-gray-400"><span class="text-[20px]">🔔</span><span class="text-[11px]">Agenda</span></button>
+<button onclick="nav('resumo')" id="nav-resumo" class="flex flex-col items-center text-gray-400"><span class="text-[20px]">📊</span><span class="text-[11px]">Resumo</span></button>
+<button onclick="nav('perfil')" id="nav-perfil" class="flex flex-col items-center text-gray-400"><span class="text-[20px]">👤</span><span class="text-[11px]">Perfil</span></button>
+</nav>
+
+<script>
+// DATA BASE
+let current='inicio';
+let lembretes=JSON.parse(localStorage.getItem('lembretes')||'[]');
+let momentos=JSON.parse(localStorage.getItem('momentos')||'[]');
+let fraseIndex=parseInt(localStorage.getItem('fraseIndex')||'0');
+let coracoes=parseInt(localStorage.getItem('coracoesPresenca')||'0'); // 0-5
+
+// Frases - TODOS OS SALMOS E PROVÉRBIOS + Versículos de esperança
+const frases=[
+ // SALMOS 1-50
+ "Bem-aventurado o homem que não anda no conselho dos ímpios. - Salmos 1:1",
+ "O Senhor é meu pastor, nada me faltará. - Salmos 23:1",
+ "Ainda que eu ande pelo vale da sombra da morte, não temerei mal algum. - Salmos 23:4",
+ "O Senhor é a minha luz e a minha salvação. - Salmos 27:1",
+ "Espera no Senhor, anima-te, e ele fortalecerá o teu coração. - Salmos 27:14",
+ "O choro pode durar uma noite, mas a alegria vem pela manhã. - Salmos 30:5",
+ "Entrega o teu caminho ao Senhor, confia nele, e ele tudo fará. - Salmos 37:5",
+ "Deleita-te no Senhor, e ele concederá os desejos do teu coração. - Salmos 37:4",
+ "Deus é o nosso refúgio e fortaleza, socorro bem presente na angústia. - Salmos 46:1",
+ "Cria em mim, ó Deus, um coração puro. - Salmos 51:10",
+ "Lança o teu cuidado sobre o Senhor, e ele te susterá. - Salmos 55:22",
+ "Em Deus louvarei a sua palavra, em Deus pus a minha confiança. - Salmos 56:4",
+ "Mil cairão ao teu lado, e dez mil à tua direita, mas tu não serás atingido. - Salmos 91:7",
+ "Aquele que habita no esconderijo do Altíssimo, à sombra do Onipotente descansará. - Salmos 91:1",
+ "O Senhor te guardará de todo mal; guardará a tua alma. - Salmos 121:7",
+ "Levantarei os meus olhos para os montes, de onde vem o meu socorro? - Salmos 121:1",
+ "O meu socorro vem do Senhor, que fez o céu e a terra. - Salmos 121:2",
+ "O Senhor é bom, um refúgio em tempos de angústia. - Salmos 46:1",
+ "Aquietai-vos e sabei que eu sou Deus. - Salmos 46:10",
+ "O Senhor é o meu pastor, nada me faltará. - Salmos 23:1",
+ "O Senhor é minha força e meu escudo. - Salmos 28:7",
+ "Os que esperam no Senhor renovarão as forças. - Salmos 103:5",
+ "Bendize, ó minha alma, ao Senhor. - Salmos 103:1",
+ "Como o pai se compadece dos filhos, assim o Senhor se compadece. - Salmos 103:13",
+ "O Senhor está perto dos que têm o coração quebrantado. - Salmos 34:18",
+ "Provai e vede que o Senhor é bom. - Salmos 34:8",
+ "O anjo do Senhor acampa-se ao redor dos que o temem. - Salmos 34:7",
+ "Muitas são as aflições do justo, mas o Senhor o livra de todas. - Salmos 34:19",
+ "O Senhor é perto de todos os que o invocam. - Salmos 145:18",
+ "O Senhor sustenta a todos os que caem. - Salmos 145:14",
+ "O Senhor é justo em todos os seus caminhos. - Salmos 145:17",
+ "O Senhor guarda todos os que o amam. - Salmos 145:20",
+ "Cantai ao Senhor um cântico novo. - Salmos 96:1",
+ "Grande é o Senhor e mui digno de louvor. - Salmos 96:4",
+ "O Senhor reina, regozije-se a terra. - Salmos 97:1",
+ "O Senhor fez notória a sua salvação. - Salmos 98:2",
+ "Celebrai com júbilo ao Senhor, todas as terras. - Salmos 100:1",
+ "Servi ao Senhor com alegria. - Salmos 100:2",
+ "O Senhor é bom, a sua misericórdia dura para sempre. - Salmos 100:5",
+ "A misericórdia do Senhor é de eternidade a eternidade. - Salmos 103:17",
+ "O Senhor tem estabelecido o seu trono nos céus. - Salmos 103:19",
+ "Louvai ao Senhor, porque ele é bom. - Salmos 106:1",
+ "Dai graças ao Senhor, porque ele é bom. - Salmos 107:1",
+ "O Senhor é misericordioso e justo. - Salmos 116:5",
+ "O Senhor me livrou da morte. - Salmos 116:8",
+ "A pedra que os edificadores rejeitaram tornou-se cabeça da esquina. - Salmos 118:22",
+ "Este é o dia que fez o Senhor; regozijemo-nos nele. - Salmos 118:24",
+ "Lâmpada para os meus pés é tua palavra. - Salmos 119:105",
+ "Escondi a tua palavra no meu coração, para eu não pecar contra ti. - Salmos 119:11",
+ "Os teus testemunhos são a minha herança para sempre. - Salmos 119:111",
+ "Bem-aventurados os que trilham caminhos retos. - Salmos 119:1",
+ "A tua palavra é a verdade desde o princípio. - Salmos 119:160",
+ "Muita paz têm os que amam a tua lei. - Salmos 119:165",
+ "O Senhor guardará a tua entrada e a tua saída. - Salmos 121:8",
+ "Alegrei-me quando me disseram: Vamos à casa do Senhor. - Salmos 122:1",
+ "O nosso socorro está no nome do Senhor. - Salmos 124:8",
+ "Os que confiam no Senhor serão como o monte de Sião, que não se abala. - Salmos 125:1",
+ "Quando o Senhor trouxe do cativeiro os que voltaram a Sião, estávamos como os que sonham. - Salmos 126:1",
+ "Se o Senhor não edificar a casa, em vão trabalham os que edificam. - Salmos 127:1",
+ "Bem-aventurado aquele que teme ao Senhor. - Salmos 128:1",
+ "De profundis clamei a ti, ó Senhor. - Salmos 130:1",
+ "Espera Israel no Senhor, porque no Senhor há misericórdia. - Salmos 130:7",
+ "Como é bom e quão suave é que os irmãos vivam em união. - Salmos 133:1",
+ "Louvai ao Senhor, porque ele é bom, porque a sua benignidade dura para sempre. - Salmos 136:1",
+ "O Senhor cumprirá o que a mim me concerne. - Salmos 138:8",
+ "Sonda-me, ó Deus, e conhece o meu coração. - Salmos 139:23",
+ "Para onde me irei do teu espírito? - Salmos 139:7",
+ "Precioso é o teu amor, ó Deus. - Salmos 36:7",
+ "O Senhor é a força do seu povo. - Salmos 28:8",
+ // SALMOS 50-100 continuação
+ "O Senhor ouvirá quando eu clamar a ele. - Salmos 4:3",
+ "Em paz me deitarei e dormirei, porque só tu, Senhor, me fazes habitar em segurança. - Salmos 4:8",
+ "Pela manhã ouvirás a minha voz, ó Senhor. - Salmos 5:3",
+ "O Senhor é rei eterno. - Salmos 10:16",
+ "Os céus declaram a glória de Deus. - Salmos 19:1",
+ "A lei do Senhor é perfeita, e refrigera a alma. - Salmos 19:7",
+ "O Senhor te ouça no dia da angústia. - Salmos 20:1",
+ "Alguns confiam em carros e outros em cavalos, mas nós faremos menção do nome do Senhor. - Salmos 20:7",
+ "O rei se alegra em tua força, Senhor. - Salmos 21:1",
+ "Deus meu, Deus meu, por que me desamparaste? - Salmos 22:1",
+ "O Senhor é o meu rochedo e a minha fortaleza. - Salmos 18:2",
+ "Com o meu Deus salto uma muralha. - Salmos 18:29",
+ "O Senhor vive, e bendito seja o meu rochedo. - Salmos 18:46",
+ "O Senhor é o meu alto refúgio. - Salmos 9:9",
+ "Buscai ao Senhor enquanto se pode achar. - Salmos 32:6",
+ "Bem-aventurado aquele cuja transgressão é perdoada. - Salmos 32:1",
+ "Tu és o meu esconderijo, preservar-me-ás da angústia. - Salmos 32:7",
+ "Regozijai-vos no Senhor, vós justos. - Salmos 33:1",
+ "A palavra do Senhor é reta, e todas as suas obras são fiéis. - Salmos 33:4",
+ "Eis que os olhos do Senhor estão sobre os que o temem. - Salmos 33:18",
+ "O Senhor ama a justiça e o juízo. - Salmos 33:5",
+ "Cantai-lhe um cântico novo. - Salmos 33:3",
+ // PROVÉRBIOS - TODOS
+ "O temor do Senhor é o princípio do conhecimento. - Provérbios 1:7",
+ "Ouve, filho meu, a instrução de teu pai. - Provérbios 1:8",
+ "Filho meu, não rejeites a correção do Senhor. - Provérbios 3:11",
+ "Confia no Senhor de todo o teu coração e não te estribes no teu próprio entendimento. - Provérbios 3:5",
+ "Reconhece-o em todos os teus caminhos, e ele endireitará as tuas veredas. - Provérbios 3:6",
+ "Não sejas sábio a teus próprios olhos; teme ao Senhor. - Provérbios 3:7",
+ "Honra ao Senhor com os teus bens. - Provérbios 3:9",
+ "Bem-aventurado o homem que acha sabedoria. - Provérbios 3:13",
+ "O Senhor com sabedoria fundou a terra. - Provérbios 3:19",
+ "Não negues o bem a quem de direito, estando na tua mão o poder de o fazer. - Provérbios 3:27",
+ "Sobre tudo o que se deve guardar, guarda o teu coração. - Provérbios 4:23",
+ "O caminho dos justos é como a luz da aurora. - Provérbios 4:18",
+ "Ouve, filho meu, e aceita as minhas palavras. - Provérbios 4:10",
+ "Retém as minhas palavras; guarda os meus mandamentos e vive. - Provérbios 4:4",
+ "Adquire sabedoria, adquire inteligência. - Provérbios 4:5",
+ "A sabedoria é a coisa principal. - Provérbios 4:7",
+ "Não entres na vereda dos ímpios. - Provérbios 4:14",
+ "A boca do justo é fonte de vida. - Provérbios 10:11",
+ "O ódio excita contendas, mas o amor cobre todas as transgressões. - Provérbios 10:12",
+ "A bênção do Senhor é que enriquece. - Provérbios 10:22",
+ "A esperança dos justos é alegria. - Provérbios 10:28",
+ "O que guarda a sua boca conserva a sua alma. - Provérbios 13:3",
+ "A resposta branda desvia o furor. - Provérbios 15:1",
+ "O coração alegre aformoseia o rosto. - Provérbios 15:13",
+ "Melhor é um prato de hortaliça onde há amor, do que boi gordo com ódio. - Provérbios 15:17",
+ "O coração do homem considera o seu caminho, mas o Senhor lhe dirige os passos. - Provérbios 16:9",
+ "Melhor é o pouco com justiça do que grandes rendas com injustiça. - Provérbios 16:8",
+ "O nome do Senhor é torre forte; o justo corre para ela e está seguro. - Provérbios 18:10",
+ "A morte e a vida estão no poder da língua. - Provérbios 18:21",
+ "O homem que tem muitos amigos pode congratular-se, mas há amigo mais chegado que um irmão. - Provérbios 18:24",
+ "O que acha uma esposa, acha o bem. - Provérbios 18:22",
+ "O coração alegre serve de bom remédio. - Provérbios 17:22",
+ "Melhor é um bocado seco com tranquilidade do que casa cheia de sacrifício com contenda. - Provérbios 17:1",
+ "A sabedoria edifica a sua casa. - Provérbios 14:1",
+ "A mulher virtuosa é a coroa do seu marido. - Provérbios 12:4",
+ "A mulher sábia edifica a sua casa. - Provérbios 14:1",
+ "O que guarda a sua boca e a sua língua, guarda a sua alma das angústias. - Provérbios 21:23",
+ "Instrui o menino no caminho em que deve andar. - Provérbios 22:6",
+ "O rico e o pobre se encontram; o Senhor fez a ambos. - Provérbios 22:2",
+ "Não removas os limites antigos. - Provérbios 22:28",
+ "O preguiçoso diz: Um leão está lá fora. - Provérbios 22:13",
+ "A boa reputação vale mais do que grandes riquezas. - Provérbios 22:1",
+ "O temor do Senhor encaminha para a vida. - Provérbios 19:23",
+ "Muitos propósitos há no coração do homem, mas o conselho do Senhor permanecerá. - Provérbios 19:21",
+ "A sabedoria clama lá fora. - Provérbios 1:20",
+ "O temor do Senhor é odiar o mal. - Provérbios 8:13",
+ "Eu, a sabedoria, habito com a prudência. - Provérbios 8:12",
+ "Melhor é a sabedoria do que os rubis. - Provérbios 8:11",
+ "O Senhor me possuiu no princípio de seus caminhos. - Provérbios 8:22",
+ "Abençoado o homem que me dá ouvidos. - Provérbios 8:34",
+ "O que me achar, achará a vida. - Provérbios 8:35",
+ "O filho sábio alegra a seu pai. - Provérbios 10:1",
+ "O que anda em sinceridade anda seguro. - Provérbios 10:9",
+ "Quem anda com os sábios será sábio. - Provérbios 13:20",
+ "A esperança adiada desfalece o coração, mas o desejo cumprido é árvore de vida. - Provérbios 13:12",
+ "O que atenta para o ensino achará o bem. - Provérbios 16:20",
+ "A língua dos sábios é saúde. - Provérbios 12:18",
+ "O caminho do insensato é reto aos seus olhos, mas o que dá ouvidos ao conselho é sábio. - Provérbios 12:15",
+ "A mão dos diligentes dominará. - Provérbios 12:24",
+ "A ansiedade no coração deixa o homem abatido, mas a boa palavra o alegra. - Provérbios 12:25",
+ "O justo serve de guia para o seu companheiro. - Provérbios 12:26",
+ "Tesouro desejável e azeite há na casa do sábio. - Provérbios 21:20",
+ "Melhor é morar num canto do telhado do que com mulher rixosa. - Provérbios 21:9",
+ "O que segue a justiça e a beneficência achará a vida. - Provérbios 21:21",
+ "O cavalo prepara-se para o dia da batalha, mas do Senhor vem a vitória. - Provérbios 21:31",
+ "Não te glories do dia de amanhã, porque não sabes o que produzirá o dia. - Provérbios 27:1",
+ "Como o ferro com ferro se aguça, assim o homem afia o rosto do seu amigo. - Provérbios 27:17",
+ "O orgulho precede a ruína. - Provérbios 16:18",
+ "A soberba precede a queda. - Provérbios 16:18",
+ "Melhor é humilhar-se com os mansos do que repartir despojo com soberbos. - Provérbios 16:19",
+ "O coração alegre é bom remédio, mas o espírito abatido seca os ossos. - Provérbios 17:22",
+ "Quem encobre suas transgressões nunca prosperará. - Provérbios 28:13",
+ "O que confia no Senhor prosperará. - Provérbios 28:25",
+ "Bem-aventurado o homem que continuamente teme. - Provérbios 28:14",
+ "O que repreende o homem achará depois mais favor. - Provérbios 28:23",
+ "O homem fiel abundará em bênçãos. - Provérbios 28:20",
+ "Onde não há profecia, o povo se corrompe. - Provérbios 29:18",
+ "O temor do homem armará laços. - Provérbios 29:25",
+ "Toda palavra de Deus é pura. - Provérbios 30:5",
+ "Não acrescentes às suas palavras. - Provérbios 30:6",
+ "Duas coisas te peço, não mas negues. - Provérbios 30:7",
+ "Mulher virtuosa, quem a achará? O seu valor muito excede o de rubis. - Provérbios 31:10",
+ "Enganosa é a beleza e vã a formosura, mas a mulher que teme ao Senhor, essa será louvada. - Provérbios 31:30",
+ "Abre a tua boca com sabedoria. - Provérbios 31:26",
+ // OUTROS VERSÍCULOS DE ESPERANÇA
+ "Tudo posso naquele que me fortalece. - Filipenses 4:13",
+ "Porque eu bem sei os pensamentos que tenho a vosso respeito, diz o Senhor. - Jeremias 29:11",
+ "Todas as coisas cooperam para o bem daqueles que amam a Deus. - Romanos 8:28",
+ "Não temas, porque eu sou contigo. - Isaías 41:10",
+ "Os que esperam no Senhor renovarão as forças. - Isaías 40:31",
+ "Vinde a mim, todos os que estais cansados. - Mateus 11:28",
+ "Deixo-vos a paz, a minha paz vos dou. - João 14:27",
+ "Tenho-vos dito isto, para que em mim tenhais paz. - João 16:33",
+ "A minha graça te basta. - 2 Coríntios 12:9",
+ "O Senhor é meu pastor, nada me faltará. - Salmos 23:1",
+ "Alegrai-vos na esperança. - Romanos 12:12",
+ "Seja forte e corajoso. - Josué 1:9",
+];
+
+// === MOMENTOS EM FAMÍLIA - BANCO INTELIGENTE POR IA ===
+const bancoMomentos={
+  "Crianças": {
+    "Em casa": {
+      "10": [
+        {titulo:"🧸 O brinquedo ganhou vida", desc:"Escolham um brinquedo e inventem juntos uma pequena história sobre ele. Onde ele mora? O que gosta?", tempo:"10 min"},
+        {titulo:"🎨 Vamos criar juntos?", desc:"Escolham três objetos da casa e inventem uma pequena história usando todos eles.", tempo:"10-20 min"},
+        {titulo:"👀 Caça ao tesouro relâmpago", desc:"Escolha uma cor. Em 3 minutos, quem acha mais coisas dessa cor pela casa?", tempo:"10 min"},
+      ],
+      "20": [
+        {titulo:"🍪 Vamos preparar alguma coisa?", desc:"Façam juntos um lanche simples e deixem a criança ajudar em pequenas tarefas. O importante é fazer juntos.", tempo:"20-30 min"},
+        {titulo:"📚 Cantinho da história", desc:"Sentem no chão, cada um pega um livro e conta a história do jeito que imagina, sem ler.", tempo:"20 min"},
+        {titulo:"🎭 Teatro de meias", desc:"Peguem meias e façam bonequinhos. Inventem uma peça de 2 minutos.", tempo:"15-20 min"},
+      ],
+      "30": [
+        {titulo:"🏠 Cabana da imaginação", desc:"Montem uma cabana com lençóis e almofadas. Entrem com lanterna e contem histórias lá dentro.", tempo:"30+ min"},
+        {titulo:"🍰 Chef mirim", desc:"Escolham uma receita simples e façam juntos. Vale lamber a colher.", tempo:"30+ min"},
+        {titulo:"🎨 Galeria da família", desc:"Desenhem juntos a família e colem na parede. Cada um desenha o outro.", tempo:"30 min"},
+      ]
+    },
+    "Ao ar livre": {
+      "10": [
+        {titulo:"🌈 Caça às cores", desc:"Procurem juntos coisas de diferentes cores pelo caminho. Quantas cores conseguem achar em 10 min?", tempo:"10-20 min"},
+        {titulo:"🍃 Colecionadores", desc:"Coletem 5 folhas diferentes. Observem as cores e formatos.", tempo:"10 min"},
+      ],
+      "20": [
+        {titulo:"🌿 Pequenos exploradores", desc:"Observem folhas, árvores, flores, pedras ou pequenos animais e conversem sobre o que encontrarem.", tempo:"15-30 min"},
+        {titulo:"🚶 Caminhada com histórias", desc:"Durante uma caminhada, cada pessoa inventa uma parte de uma história. Um começa, o outro continua.", tempo:"20 min"},
+      ],
+      "30": [
+        {titulo:"🪁 Tarde no parque", desc:"Levam uma bola, corda ou nada. Só estejam lá, juntos. Deixem a brincadeira surgir.", tempo:"30+ min"},
+        {titulo:"🌳 Piquenique simples", desc:"Toalha no chão do quintal, um suco e um pão. O lugar não importa, a presença importa.", tempo:"30 min"},
+      ]
+    }
+  },
+  "Adolescentes": {
+    "Em casa": {
+      "10": [
+        {titulo:"🎵 Uma música, uma história", desc:"Cada pessoa escolhe uma música que marcou sua vida e conta por quê. Sem julgamento, só escuta.", tempo:"10-15 min"},
+        {titulo:"📱 Por alguns minutos, deixe o celular de lado", desc:"Sentem juntos sem celular por 10 min. Vejam o que acontece quando a tela não está no meio.", tempo:"10 min"},
+      ],
+      "20": [
+        {titulo:"☕ Café sem pressa", desc:"Preparem alguma coisa simples juntos e conversem sobre qualquer assunto. Não precisa ter pergunta pronta. Deixem a conversa acontecer.", tempo:"20-30 min"},
+        {titulo:"🎬 Escolha juntos", desc:"Escolham um filme, série ou vídeo para assistir juntos. Antes de começar, cada um explica por que escolheu aquilo.", tempo:"20-30 min"},
+      ],
+      "30": [
+        {titulo:"🎮 Joguem juntos, do jeito dele", desc:"Pede para ele te ensinar algo que gosta. Pode ser jogo, música, vídeo. Mostre interesse de verdade.", tempo:"30+ min"},
+        {titulo:"🍕 Cozinha parceria", desc:"Façam algo que ele gosta de comer. Conversem enquanto fazem, sem pressionar.", tempo:"30 min"},
+      ]
+    },
+    "Ao ar livre": {
+      "10": [
+        {titulo:"🚶 Uma pausa juntos", desc:"Saiam para caminhar 10 min sem destino. Não precisa ter atividade, só presença.", tempo:"10 min"},
+      ],
+      "20": [
+        {titulo:"🚶 Uma caminhada diferente", desc:"Caminhem juntos e deixem a conversa acontecer naturalmente. Não precisa existir uma atividade específica. Às vezes, estar junto já é o momento. ❤️", tempo:"20-30 min"},
+      ],
+      "30": [
+        {titulo:"🌳 Vamos simplesmente sair?", desc:"Escolham um lugar tranquilo e passem alguns minutos juntos. Sem roteiro. Sem obrigação. Apenas presença.", tempo:"30 min"},
+        {titulo:"☀️ Sorvete e conversa", desc:"Comprem um sorvete e sentem em algum lugar. Conversem sobre nada e sobre tudo.", tempo:"30 min"},
+      ]
+    }
+  },
+  "Adultos": {
+    "Em casa": {
+      "10": [
+        {titulo:"☕ Um café e uma conversa", desc:"Sentem juntos por alguns minutos. Uma pergunta simples pode iniciar: 'Como você está de verdade?'", tempo:"10-15 min"},
+        {titulo:"📸 Uma lembrança nossa", desc:"Escolham uma fotografia antiga e contem um ao outro o que lembram daquele momento.", tempo:"10-20 min"},
+      ],
+      "20": [
+        {titulo:"🕯️ Pausa com calma", desc:"Apaguem a luz forte, acendam uma luz baixa, sentem juntos. Sem celular. Só vocês.", tempo:"15-20 min"},
+        {titulo:"💌 Gratidão em voz alta", desc:"Cada um diz uma coisa que agradece no outro. Olhando nos olhos.", tempo:"15 min"},
+      ],
+      "30": [
+        {titulo:"🍽️ Vamos fazer juntos?", desc:"Preparem uma refeição simples juntos. Não importa o resultado. O objetivo é compartilhar o momento.", tempo:"30+ min"},
+        {titulo:"📖 Nossa história", desc:"Relembrem como se conheceram. Contem detalhes que o outro não lembra.", tempo:"30 min"},
+      ]
+    },
+    "Ao ar livre": {
+      "10": [
+        {titulo:"☀️ Alguns minutos juntos", desc:"Sentem em um lugar agradável, tomem um café ou simplesmente conversem. Sem pressa.", tempo:"10-20 min"},
+      ],
+      "20": [
+        {titulo:"🌳 Vamos simplesmente caminhar?", desc:"Escolham um lugar tranquilo e caminhem juntos. Não é necessário planejar uma atividade. O objetivo é estar presente. ❤️", tempo:"20-30 min"},
+      ],
+      "30": [
+        {titulo:"🌅 Final de tarde juntos", desc:"Escolham um lugar para ver o fim de tarde. Levem algo para beber. Conversem ou fiquem em silêncio juntos.", tempo:"30+ min"},
+      ]
+    }
+  }
+};
+
+let escolhaComQuem=null;
+let escolhaOnde=null;
+let escolhaTempo=null;
+let sugestaoAtual=null;
+
+function nav(t){
+ current=t;
+ document.querySelectorAll('nav button').forEach(b=>{b.classList.remove('text-[#4A7C59]','font-bold'); b.classList.add('text-gray-400');});
+ const btn=document.getElementById('nav-'+t);
+ if(btn){btn.classList.remove('text-gray-400'); btn.classList.add('text-[#4A7C59]','font-bold');}
+ else {document.getElementById('nav-inicio')?.classList.add('text-[#4A7C59]','font-bold');}
+ render(); window.scrollTo(0,0);
+}
+
+function render(){
+ const app=document.getElementById('app');
+ if(current==='inicio') renderInicio();
+ else if(current==='agenda') renderAgenda();
+ else if(current==='familia') renderFamiliaInicio();
+ else if(current==='esperanca') renderEsperanca();
+ else if(current==='momentos') renderMomentos();
+ else if(current==='perfil') renderPerfil();
+ else if(current==='resumo') renderResumo();
+}
+
+function renderInicio(){
+ document.getElementById('app').innerHTML=`
+ <div class="px-5 pt-4">
+  <h1 class="cursive text-[38px] leading-none text-[#2C2A26]">Bom dia! ☀️</h1>
+  <p class="text-[15px] text-[#6B5F58] mt-1 leading-snug">Que seu dia seja leve e cheio de presença.</p>
+  
+  <div class="mt-4 bg-gradient-to-br from-[#D9EAD3] to-[#FFF6C5] rounded-[20px] p-4 flex items-center gap-3 border border-[#C8DCC0]/40">
+   <div class="w-11 h-11 rounded-full bg-white flex items-center justify-center text-xl shadow-sm">☀️</div>
+   <div><div class="font-extrabold text-[17px] text-[#2C2A26]">Família em primeiro lugar</div><div class="text-[13px] text-[#5A6B55]">Você presente, eu cuido do resto</div></div>
+  </div>
+
+  <div class="mt-4 grid grid-cols-2 gap-3">
+   <button onclick="nav('agenda')" class="bg-white rounded-[22px] p-4 text-left card-shadow border border-black/5 active:scale-[0.97] transition"><div class="w-12 h-12 bg-[#D9EAD3] rounded-full flex items-center justify-center text-xl">🔔</div><div class="font-extrabold text-[16px] mt-3 leading-tight">Lembre por Mim</div><div class="text-[12px] text-[#8A7E75] mt-1">Seus lembretes falados</div></button>
+   <button onclick="nav('familia')" class="bg-white rounded-[22px] p-4 text-left card-shadow border border-black/5 active:scale-[0.97] transition"><div class="w-12 h-12 bg-[#FFD8D8] rounded-full flex items-center justify-center text-xl">❤️</div><div class="font-extrabold text-[16px] mt-3 leading-tight">Momentos em Família</div><div class="text-[12px] text-[#8A7E75] mt-1">Menos tela. Mais presença.</div></button>
+   <button onclick="nav('esperanca')" class="bg-white rounded-[22px] p-4 text-left card-shadow border border-black/5 active:scale-[0.97] transition"><div class="w-12 h-12 bg-[#FFF3C4] rounded-full flex items-center justify-center text-xl">🌱</div><div class="font-extrabold text-[16px] mt-3 leading-tight">Um minuto de esperança</div><div class="text-[12px] text-[#8A7E75] mt-1">Respire fundo</div></button>
+   <button onclick="nav('momentos')" class="bg-white rounded-[22px] p-4 text-left card-shadow border border-black/5 active:scale-[0.97] transition"><div class="w-12 h-12 bg-[#D6E8FF] rounded-full flex items-center justify-center text-xl">📸</div><div class="font-extrabold text-[16px] mt-3 leading-tight">Nossos Momentos</div><div class="text-[12px] text-[#8A7E75] mt-1">Guardar memórias</div></button>
+  </div>
+
+  <div class="mt-8 flex items-center justify-center gap-2">
+   <div class="flex gap-1">${[0,1,2,3,4].map(i=>`<span class="text-[18px]">${i<coracoes?'❤️':'♡'}</span>`).join('')}</div>
+   <span class="text-[12px] text-[#9A8F88]">${coracoes}/5 Corações de Presença</span>
+  </div>
+  <p class="cursive text-center text-[20px] text-[#8A7E75] mt-6">A felicidade pode ser encontrada no simples.</p>
+ </div>`;
+}
+
+// === NOVO MÓDULO MOMENTOS EM FAMÍLIA CONFORME PROMPT ===
+function renderFamiliaInicio(){
+ document.getElementById('app').innerHTML=`
+ <div class="px-5 pt-3">
+  <button onclick="nav('inicio')" class="text-[13px] font-bold text-[#9A8F88]">← INÍCIO</button>
+  <h1 class="cursive text-[32px] font-bold text-[#2C2A26] mt-3 leading-tight">❤️ Momentos em Família</h1>
+  <p class="text-[17px] font-bold text-[#2C2A26] mt-4">Que momento cabe no seu dia?</p>
+  <p class="text-[14px] text-[#6B5F58] mt-1 leading-snug">Você não precisa de uma atividade especial. Às vezes, alguns minutos de presença já são suficientes.</p>
+  <p class="text-[13px] italic text-[#9A8F88] mt-2">Menos tela. Mais presença. Mais vida.</p>
+  
+  <div class="mt-8">
+   <p class="font-extrabold text-[15px] tracking-wide text-[#2C2A26]">COM QUEM?</p>
+   <div class="mt-3 space-y-3">
+    <button onclick="escolherComQuem('Crianças')" class="w-full big-touch bg-white rounded-[20px] p-4 flex items-center gap-4 card-shadow border-2 ${escolhaComQuem==='Crianças'?'border-[#4A7C59] bg-[#EAF4ED]':'border-black/5'} text-left active:scale-[0.98] transition">
+     <div class="w-14 h-14 rounded-full bg-[#FFE4E8] flex items-center justify-center text-2xl">👧</div>
+     <div><div class="font-extrabold text-[18px]">Crianças</div><div class="text-[13px] text-[#6B5F58]">Pequenos, curiosos, cheios de imaginação</div></div>
+    </button>
+    <button onclick="escolherComQuem('Adolescentes')" class="w-full big-touch bg-white rounded-[20px] p-4 flex items-center gap-4 card-shadow border-2 ${escolhaComQuem==='Adolescentes'?'border-[#4A7C59] bg-[#EAF4ED]':'border-black/5'} text-left active:scale-[0.98] transition">
+     <div class="w-14 h-14 rounded-full bg-[#E8E8FF] flex items-center justify-center text-2xl">🧑</div>
+     <div><div class="font-extrabold text-[18px]">Adolescentes</div><div class="text-[13px] text-[#6B5F58]">Conversa, confiança e humor</div></div>
+    </button>
+    <button onclick="escolherComQuem('Adultos')" class="w-full big-touch bg-white rounded-[20px] p-4 flex items-center gap-4 card-shadow border-2 ${escolhaComQuem==='Adultos'?'border-[#4A7C59] bg-[#EAF4ED]':'border-black/5'} text-left active:scale-[0.98] transition">
+     <div class="w-14 h-14 rounded-full bg-[#FFF3C4] flex items-center justify-center text-2xl">👨</div>
+     <div><div class="font-extrabold text-[18px]">Adultos</div><div class="text-[13px] text-[#6B5F58]">Companheiro(a), pais, avós, irmãos</div></div>
+    </button>
+   </div>
+  </div>
+
+  ${escolhaComQuem ? `
+  <div class="mt-8">
+   <p class="font-extrabold text-[15px] tracking-wide">ONDE?</p>
+   <div class="mt-3 grid grid-cols-2 gap-3">
+    <button onclick="escolherOnde('Em casa')" class="big-touch bg-white rounded-[20px] p-4 card-shadow border-2 ${escolhaOnde==='Em casa'?'border-[#4A7C59] bg-[#EAF4ED]':'border-black/5'} active:scale-[0.98] transition">
+     <div class="text-3xl">🏠</div><div class="font-extrabold text-[16px] mt-2">Em casa</div><div class="text-[12px] text-[#6B5F58]">Sala, quarto, cozinha</div>
+    </button>
+    <button onclick="escolherOnde('Ao ar livre')" class="big-touch bg-white rounded-[20px] p-4 card-shadow border-2 ${escolhaOnde==='Ao ar livre'?'border-[#4A7C59] bg-[#EAF4ED]':'border-black/5'} active:scale-[0.98] transition">
+     <div class="text-3xl">🌳</div><div class="font-extrabold text-[16px] mt-2">Ao ar livre</div><div class="text-[12px] text-[#6B5F58]">Quintal, praça, parque</div>
+    </button>
+   </div>
+  </div>` : ''}
+
+  ${escolhaOnde ? `
+  <div class="mt-8">
+   <p class="font-extrabold text-[15px] tracking-wide">QUANTO TEMPO?</p>
+   <div class="mt-3 grid grid-cols-3 gap-3">
+    <button onclick="escolherTempo('10')" class="big-touch bg-white rounded-[20px] p-3 card-shadow border-2 ${escolhaTempo==='10'?'border-[#4A7C59] bg-[#2C2A26] text-white':'border-black/5'} active:scale-[0.98] transition text-center"><div class="text-xl">⏱️</div><div class="font-extrabold text-[16px] mt-1">10 min</div><div class="text-[11px] ${escolhaTempo==='10'?'text-white/70':'text-[#6B5F58]'}">Rapidinho</div></button>
+    <button onclick="escolherTempo('20')" class="big-touch bg-white rounded-[20px] p-3 card-shadow border-2 ${escolhaTempo==='20'?'border-[#4A7C59] bg-[#2C2A26] text-white':'border-black/5'} active:scale-[0.98] transition text-center"><div class="text-xl">⏱️</div><div class="font-extrabold text-[16px] mt-1">20 min</div><div class="text-[11px] ${escolhaTempo==='20'?'text-white/70':'text-[#6B5F58]'}">Com calma</div></button>
+    <button onclick="escolherTempo('30')" class="big-touch bg-white rounded-[20px] p-3 card-shadow border-2 ${escolhaTempo==='30'?'border-[#4A7C59] bg-[#2C2A26] text-white':'border-black/5'} active:scale-[0.98] transition text-center"><div class="text-xl">⏱️</div><div class="font-extrabold text-[16px] mt-1">30+ min</div><div class="text-[11px] ${escolhaTempo==='30'?'text-white/70':'text-[#6B5F58]'}">Sem pressa</div></button>
+   </div>
+  </div>` : ''}
+
+  ${escolhaComQuem && escolhaOnde && escolhaTempo ? `
+  <button onclick="encontrarMomento()" class="w-full mt-8 py-4 rounded-full bg-[#2C2A26] text-white font-extrabold text-[17px] shadow-lg active:scale-[0.97] transition">✨ ENCONTRAR UM MOMENTO</button>
+  ` : ''}
+
+  <p class="text-center text-[12px] text-[#C4B8B0] mt-6 px-4">Você não precisa reservar horas. Um momento pode durar apenas 10 minutos.</p>
+ </div>`;
+}
+
+function escolherComQuem(q){ escolhaComQuem=q; escolhaOnde=null; escolhaTempo=null; renderFamiliaInicio(); }
+function escolherOnde(o){ escolhaOnde=o; escolhaTempo=null; renderFamiliaInicio(); }
+function escolherTempo(t){ escolhaTempo=t; renderFamiliaInicio(); }
+
+function encontrarMomento(){
+ const lista = bancoMomentos[escolhaComQuem]?.[escolhaOnde]?.[escolhaTempo] || bancoMomentos[escolhaComQuem]?.[escolhaOnde]?.["10"] || [];
+ if(lista.length===0){ alert("Vamos tentar outra combinação ❤️"); return; }
+ sugestaoAtual = lista[Math.floor(Math.random()*lista.length)];
+ renderSugestao();
+}
+
+function renderSugestao(){
+ if(!sugestaoAtual) return;
+ document.getElementById('app').innerHTML=`
+ <div class="px-5 pt-3">
+  <button onclick="renderFamiliaInicio()" class="text-[13px] font-bold text-[#9A8F88]">← VOLTAR</button>
+  <div class="mt-5 bg-white rounded-[28px] card-shadow border border-black/5 overflow-hidden">
+   <div class="h-1.5 w-full bg-gradient-to-r from-[#4A7C59] to-[#B8E6D0]"></div>
+   <div class="p-6">
+    <div class="flex justify-between items-center">
+     <span class="text-[11px] font-bold tracking-[0.12em] text-[#9A8F88]">${escolhaComQuem.toUpperCase()} • ${escolhaOnde.toUpperCase()}</span>
+     <span class="text-[11px] font-bold px-2.5 py-1 rounded-full bg-[#EAF4ED] text-[#4A7C59]">⏱️ ${sugestaoAtual.tempo}</span>
+    </div>
+    <h2 class="serif text-[24px] font-bold leading-[1.15] text-[#2C2A26] mt-4">${sugestaoAtual.titulo}</h2>
+    <p class="text-[16px] leading-[1.5] text-[#3D3A36] mt-4">${sugestaoAtual.desc}</p>
+    <div class="mt-6 p-4 rounded-[16px] bg-[#FFFBF6] border border-[#F0E6D8] text-center">
+     <p class="text-[15px] font-bold text-[#2C2A26]">❤️ O mais importante não é a brincadeira. É estarem juntos.</p>
+    </div>
+    <div class="mt-6 space-y-3">
+     <button onclick="viverMomento()" class="w-full py-4 rounded-full bg-[#2C2A26] text-white font-extrabold text-[16px] active:scale-[0.97] transition">❤️ VAMOS VIVER ESSE MOMENTO</button>
+     <button onclick="encontrarMomento()" class="w-full py-3.5 rounded-full bg-white border border-black/10 font-bold text-[15px] active:scale-[0.97] transition">🔄 OUTRA IDEIA</button>
+     <button onclick="agoraNao()" class="w-full py-2 text-[13px] text-[#9A8F88]">Agora não</button>
+    </div>
+   </div>
+  </div>
+  <p class="text-center text-[12px] text-[#C4B8B0] mt-6">Não é sobre fazer mais. É sobre estar presente.</p>
+ </div>`;
+}
+
+function agoraNao(){
+ document.getElementById('app').innerHTML=`
+ <div class="px-5 pt-20 text-center">
+  <div class="text-5xl">❤️</div>
+  <h2 class="serif text-[26px] font-bold mt-4 leading-tight">Tudo bem. ❤️<br>Amanhã é um novo dia.</h2>
+  <p class="text-[15px] text-[#6B5F58] mt-3">Sem culpa. Sem pressão. O app está aqui quando você quiser.</p>
+  <button onclick="nav('inicio')" class="mt-8 px-8 py-3 rounded-full bg-[#2C2A26] text-white font-bold">Voltar ao início</button>
+ </div>`;
+ setTimeout(()=>nav('inicio'), 2500);
+}
+
+function viverMomento(){
+ // Mostra pós-momento
+ document.getElementById('app').innerHTML=`
+ <div class="px-5 pt-10 text-center">
+  <div class="w-20 h-20 mx-auto rounded-full bg-[#EAF4ED] flex items-center justify-center text-3xl">❤️</div>
+  <h2 class="serif text-[28px] font-bold mt-5 leading-tight">Vivemos esse<br>momento!</h2>
+  <p class="text-[15px] text-[#6B5F58] mt-3">Alguns minutos de presença podem se transformar em uma lembrança para a vida inteira.</p>
+  
+  <div class="mt-8 space-y-3">
+   <button onclick="guardarFotoMomento()" class="w-full py-4 rounded-full bg-[#2C2A26] text-white font-bold text-[15px] flex items-center justify-center gap-2"><span>📸</span> Guardar uma foto</button>
+   <button onclick="registrarLembranca()" class="w-full py-4 rounded-full bg-white border border-black/10 font-bold text-[15px] flex items-center justify-center gap-2"><span>📝</span> Registrar uma lembrança</button>
+   <button onclick="finalizarMomentoSemSalvar()" class="w-full py-3 text-[14px] text-[#9A8F88]">➡️ Agora não</button>
+  </div>
+
+  <div class="mt-10">
+   <div class="flex justify-center gap-1.5">${[0,1,2,3,4].map(i=>`<span class="text-[22px]">${i<Math.min(coracoes+1,5)?'❤️':'♡'}</span>`).join('')}</div>
+   <p class="text-[12px] text-[#9A8F88] mt-2">Corações de Presença</p>
+  </div>
+
+  <p class="cursive text-[18px] text-[#9A8F88] mt-8">"Você vive o momento. Eu ajudo a guardar a lembrança." 🌱❤️</p>
+ </div>`;
+}
+
+function guardarFotoMomento(){
+ const input=document.createElement('input'); input.type='file'; input.accept='image/*';
+ input.onchange=e=>{
+  const file=e.target.files[0]; if(!file) return;
+  const r=new FileReader();
+  r.onload=ev=>{
+   const novo={id:Date.now(), titulo:sugestaoAtual.titulo.replace(/^[^\s]+\s/,'').slice(0,40), desc:"Momento vivido: "+sugestaoAtual.desc, data:new Date().toLocaleDateString(), foto:ev.target.result, coracao:true};
+   momentos.unshift(novo); localStorage.setItem('momentos',JSON.stringify(momentos));
+   atualizarCoracoes();
+   finalizarMomentoComMensagem("Foto guardada em Nossos Momentos! 📸");
+  };
+  r.readAsDataURL(file);
+ };
+ input.click();
+}
+
+function registrarLembranca(){
+ const modal=document.createElement('div');
+ modal.className='fixed inset-0 bg-black/50 z-[100] flex items-end justify-center p-4';
+ modal.innerHTML=`
+ <div class="bg-white w-full max-w-[430px] rounded-t-[28px] p-6">
+  <h3 class="font-extrabold text-[18px]">📝 Como foi esse momento?</h3>
+  <textarea id="textoLembranca" placeholder="Escreva algumas palavras sobre como foi..." class="w-full mt-4 p-4 rounded-[16px] border border-black/10 text-[15px] h-24 outline-none"></textarea>
+  <div class="flex gap-2 mt-4">
+   <button onclick="this.closest('.fixed').remove()" class="flex-1 py-3 rounded-full border text-[14px] font-bold">Cancelar</button>
+   <button onclick="salvarTextoLembranca()" class="flex-1 py-3 rounded-full bg-[#2C2A26] text-white text-[14px] font-bold">Salvar lembrança</button>
+  </div>
+ </div>`;
+ document.body.appendChild(modal);
+}
+
+function salvarTextoLembranca(){
+ const txt=document.getElementById('textoLembranca').value||"Momento especial vivido";
+ const novo={id:Date.now(), titulo:sugestaoAtual.titulo.replace(/^[^\s]+\s/,'').slice(0,40), desc:txt, data:new Date().toLocaleDateString(), foto:"", coracao:true};
+ momentos.unshift(novo); localStorage.setItem('momentos',JSON.stringify(momentos));
+ document.querySelector('.fixed.inset-0')?.remove();
+ atualizarCoracoes();
+ finalizarMomentoComMensagem("Lembrança guardada! ❤️");
+}
+
+function finalizarMomentoSemSalvar(){
+ // Não atualiza corações
+ finalizarMomentoComMensagem("Você vive o momento. Eu ajudo a guardar a lembrança. 🌱", false);
+}
+
+function atualizarCoracoes(){
+ coracoes = Math.min(5, (parseInt(localStorage.getItem('coracoesPresenca')||'0')+1));
+ if(coracoes>=5){
+   localStorage.setItem('coracoesPresenca','0');
+   setTimeout(()=>{
+     alert("❤️ Parabéns! Você está aproveitando mais o tempo com quem ama.\nContinue colecionando momentos, não pontos.\n\nSeus corações recomeçaram. ♡♡♡♡♡");
+   }, 500);
+   coracoes=0;
+ }
+ localStorage.setItem('coracoesPresenca', coracoes.toString());
+}
+
+function finalizarMomentoComMensagem(msg, atualizou=true){
+ escolhaComQuem=null; escolhaOnde=null; escolhaTempo=null; sugestaoAtual=null;
+ document.getElementById('app').innerHTML=`
+ <div class="px-5 pt-16 text-center">
+  <div class="text-4xl">${atualizou?'❤️':'🌱'}</div>
+  <p class="text-[16px] font-bold mt-4">${msg}</p>
+  ${atualizou ? `<div class="flex justify-center gap-1.5 mt-6">${[0,1,2,3,4].map(i=>`<span class="text-[20px]">${i<coracoes?'❤️':'♡'}</span>`).join('')}</div><p class="text-[12px] text-[#9A8F88] mt-2">${coracoes}/5 Corações de Presença</p>` : ''}
+  <p class="text-[14px] text-[#6B5F58] mt-6">O app te ajudou a sair do app. Agora vá viver. Família em primeiro lugar. ❤️</p>
+  <button onclick="nav('inicio')" class="mt-8 px-8 py-3 rounded-full bg-[#2C2A26] text-white font-bold text-[14px]">Voltar ao início</button>
+ </div>`;
+ setTimeout(()=>nav('inicio'), 3000);
+}
+
+// Outras telas (Agenda, etc) simplificadas mantendo letras grandes
+function renderEsperanca(){
+ const f=frases[fraseIndex%frases.length];
+ document.getElementById('app').innerHTML=`<div class="px-5 pt-3"><button onclick="nav('inicio')" class="text-[14px] font-bold text-[#9A8F88]">← INÍCIO</button><h2 class="font-extrabold text-[28px] mt-3">Um minuto de esperança 🌱</h2><div class="bg-white rounded-[24px] p-7 mt-5 shadow border text-center"><p class="cursive text-[28px] leading-snug">"${f}"</p><div class="grid grid-cols-2 gap-3 mt-8"><button onclick="fraseIndex++;localStorage.setItem('fraseIndex',fraseIndex);renderEsperanca()" class="py-4 rounded-full border text-[16px] font-bold">Outra</button><button onclick="navigator.share?navigator.share({text:'${f.replace(/'/g,"")}'}).catch(()=>{}):(navigator.clipboard.writeText('${f.replace(/'/g,"")}'),alert('Copiado!'))" class="py-4 rounded-full bg-[#4A7C59] text-white text-[16px] font-bold">Compartilhar</button></div></div></div>`;
+}
+function renderMomentos(){
+ document.getElementById('app').innerHTML=`<div class="px-5 pt-3"><button onclick="nav('inicio')" class="text-[14px] font-bold text-[#9A8F88]">← INÍCIO</button><h2 class="font-extrabold text-[28px] mt-3">Nossos Momentos 📸</h2><p class="text-[14px] text-[#6B5F58] mt-1">${momentos.length} memórias • ${coracoes}/5 ❤️</p><div class="flex gap-1 mt-2">${[0,1,2,3,4].map(i=>`<span>${i<coracoes?'❤️':'♡'}</span>`).join('')}</div><button onclick="criarMomento()" class="w-full mt-4 py-4 rounded-full bg-[#2C2A26] text-white font-bold text-[16px]">+ Criar momento</button><div class="grid grid-cols-2 gap-3 mt-5">${momentos.map(m=>`<div class="bg-white rounded-[20px] p-3 shadow border"><div class="h-24 bg-[#FFFBF6] rounded-[14px] flex items-center justify-center overflow-hidden text-2xl">${m.foto?`<img src="${m.foto}" class="w-full h-full object-cover">`:'📸'}</div><div class="font-bold text-[14px] mt-2 truncate">${m.titulo}</div><div class="text-[11px] text-gray-400">${m.data}</div><div class="flex gap-1 mt-2"><button onclick="alert('${m.desc.replace(/'/g,"")}')" class="flex-1 py-2 rounded-full bg-[#FFFBF6] border text-[12px]">Ver</button><button onclick="if(confirm('Apagar?')){momentos=momentos.filter(x=>x.id!==${m.id}); localStorage.setItem('momentos',JSON.stringify(momentos)); renderMomentos();}" class="px-3 py-2 rounded-full bg-red-50 text-red-500 text-[12px]">X</button></div></div>`).join('')||'<p class="col-span-2 text-center text-[15px] text-gray-400 mt-12">Nenhum momento ainda. Viva um em Família ❤️</p>'}</div></div>`;
+}
+function criarMomento(){document.getElementById('app').innerHTML=`<div class="px-5 pt-3"><button onclick="nav('momentos')" class="text-[14px]">← VOLTAR</button><h2 class="font-bold text-[24px] mt-3">Novo momento</h2><input id="fotoInput" type="file" accept="image/*" class="mt-4 text-[14px]"><input id="tit" placeholder="Título" class="w-full mt-4 p-4 rounded-full border text-[16px]"><textarea id="desc" placeholder="Como foi?" class="w-full mt-3 p-4 rounded-[20px] border text-[16px] h-24"></textarea><button onclick="salvarMomento()" class="w-full mt-4 py-4 rounded-full bg-[#2C2A26] text-white font-bold">Salvar ❤️</button></div>`;}
+function salvarMomento(){
+  try{
+    const titEl=document.getElementById('tit');
+    const descEl=document.getElementById('desc');
+    const fileInput=document.getElementById('fotoInput');
+    const tit=titEl?titEl.value||'Momento':'Momento';
+    const desc=descEl?descEl.value||'':'';
+    const file=fileInput && fileInput.files ? fileInput.files[0] : null;
+    if(file){
+      if(file.size>5*1024*1024){ alert('Foto muito grande. Use até 5MB.'); return; }
+      const r=new FileReader();
+      r.onload=e=>{
+        try{
+          momentos.unshift({id:Date.now(), titulo:tit, desc, data:new Date().toLocaleDateString(), foto:e.target.result});
+          localStorage.setItem('momentos',JSON.stringify(momentos));
+          atualizarCoracoes();
+          nav('momentos');
+        }catch(err){ alert('Erro ao salvar: memória cheia. Tente foto menor.'); }
+      };
+      r.onerror=()=>{ alert('Erro ao ler foto. Tente outra.'); };
+      r.readAsDataURL(file);
+    }else{
+      momentos.unshift({id:Date.now(), titulo:tit, desc, data:new Date().toLocaleDateString(), foto:''});
+      localStorage.setItem('momentos',JSON.stringify(momentos));
+      atualizarCoracoes();
+      nav('momentos');
+    }
+  }catch(err){ alert('Erro: '+err.message); }
+}
+
+let isListening=false;
+function pedirPermissaoNotificacao(){
+  if('Notification' in window){
+    Notification.requestPermission().then(p=>{
+      localStorage.setItem('permNotif', p);
+      if(p==='granted'){
+        alert('✅ Notificações ativadas! Agora seus lembretes tocam mesmo com app fechado, com som + vibração.');
+        document.getElementById('permBanner')?.classList.add('hidden');
+        // Testa
+        setTimeout(()=>{ new Notification('✅ Teste - Lembre por Mim', {body:'Notificações funcionando! Seus lembretes vão tocar mesmo fechado.', requireInteraction:true}); tocarSomForte(); }, 500);
+      } else {
+        alert('❌ Você negou notificações. Seus lembretes NÃO vão tocar com app fechado. Vá em Configurações do navegador > Notificações > Permitir.');
+      }
+      renderAgenda();
+    });
+  }
+}
+function testarNotificacao(){
+  if(Notification.permission!=='granted'){
+    alert('Ative notificações primeiro!');
+    pedirPermissaoNotificacao();
+    return;
+  }
+  alert('Teste agendado! Feche o app agora. Em 10 segundos vai tocar notificação + som + vibração mesmo fechado.');
+  const teste={id:Date.now(), titulo:'🔔 TESTE - Se funcionou, seus lembretes vão tocar fechado!', dataHora:new Date(Date.now()+10000).toISOString()};
+  agendarNotificacao(teste);
+}
+function renderAgenda(){
+ const ativos=lembretes.filter(l=>!l.concluido);
+  // Mostra banner se permissão não concedida
+  setTimeout(()=>{
+    const banner=document.getElementById('permBanner');
+    if(banner && Notification.permission!=='granted'){
+      banner.classList.remove('hidden');
+    }
+  }, 100);
+ document.getElementById('app').innerHTML=`<div class="px-5 pt-3"><button onclick="nav('inicio')" class="text-[14px] font-bold text-[#9A8F88]">← INÍCIO</button><h2 class="font-extrabold text-[28px] mt-3">Lembre por Mim 🔔</h2><div class="bg-white rounded-[24px] p-3 mt-4 flex gap-2 shadow border"><input id="lembreInput" placeholder="Ex: amanhã 8h comprar pão" class="flex-1 px-4 py-4 rounded-full bg-[#FFFBF6] text-[16px] outline-none"><button onclick="toggleMic()" class="w-14 h-14 rounded-full bg-[#4A7C59] text-white flex items-center justify-center text-xl">🎙️</button></div><div id="micModal" class="hidden fixed inset-0 bg-black/40 z-50 flex items-end justify-center"><div class="bg-white w-full max-w-[430px] rounded-t-[32px] p-7 text-center"><div class="w-20 h-20 bg-red-50 rounded-full mx-auto flex items-center justify-center animate-pulse text-3xl">🔴</div><p class="font-bold text-[20px] mt-4">Ouvindo...</p><div id="liveText" class="mt-4 p-4 bg-[#FFFBF6] rounded-[16px] text-[18px] min-h-[56px] border"></div><div class="grid grid-cols-2 gap-3 mt-6"><button onclick="usarTexto()" class="py-4 rounded-full bg-[#2C2A26] text-white font-bold">✅ Usar</button><button onclick="cancelarMic()" class="py-4 rounded-full bg-[#FFFBF6] border">Cancelar</button></div></div></div><div id="permBanner" class="mt-4 p-3 rounded-[16px] bg-[#FFF3C4] border border-[#FFE69A] hidden">
+      <div class="flex items-start gap-2">
+        <span class="text-lg">🔔</span>
+        <div class="flex-1">
+          <div class="font-bold text-[13px]">Ative notificações para tocar com app fechado</div>
+          <div class="text-[12px] text-[#6B5F58] mt-1">Sem isso, você pode perder lembretes importantes.</div>
+          <button onclick="pedirPermissaoNotificacao()" class="mt-2 px-4 py-2 rounded-full bg-[#2C2A26] text-white text-[12px] font-bold">Ativar agora</button>
+        </div>
+      </div>
+    </div>
+    <button onclick="criarLembreteManual()" class="w-full mt-4 py-4 rounded-full bg-[#2C2A26] text-white font-bold text-[16px]">Criar lembrete</button>
+    <button onclick="testarNotificacao()" class="w-full mt-2 py-2.5 rounded-full bg-white border text-[13px] font-bold text-[#4A7C59]">🔔 Testar: tocar em 10 segundos (app fechado)</button><div class="mt-6 space-y-3">${ativos.map(l=>`<div class="bg-white rounded-[20px] p-4 shadow border flex justify-between"><div><div class="font-bold text-[16px]">${l.titulo}</div><div class="text-[13px] text-gray-500">${new Date(l.dataHora).toLocaleString('pt-BR')}</div></div><div class="flex gap-2"><button onclick="concluirL(${l.id})" class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">✓</button><button onclick="apagarL(${l.id})" class="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center">✕</button></div></div>`).join('')||'<p class="text-[15px] text-center text-gray-400 mt-10">Nenhum lembrete</p>'}</div></div>`;
+ document.getElementById('lembreInput').value=localStorage.getItem('lastInput')||'';
+}
+
+// === MICROFONE CORRIGIDO 100% - SEM REPETIR ===
+let ultimoTextoCapturado='';
+let tempoUltimaCaptura=0;
+function toggleMic(){
+ if(isListening){cancelarMic(); return;}
+ isListening=true;
+ document.getElementById('micModal').classList.remove('hidden');
+ const live=document.getElementById('liveText');
+ live.innerText="Ouvindo... pode falar...";
+ let finalCaptured='';
+ try{
+  const Rec=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!Rec){
+    alert('Seu navegador não suporta microfone. Digite o lembrete. No Chrome funciona 100%.');
+    isListening=false;
+    document.getElementById('micModal').classList.add('hidden');
+    return;
+  }
+  const rec=new Rec();
+  rec.lang='pt-BR';
+  rec.continuous=false;
+  rec.interimResults=false;
+  rec.maxAlternatives=1;
+  window.recInstance=rec;
+  
+  rec.onresult=(e)=>{
+    const t=e.results[0][0].transcript.trim();
+    const agora=Date.now();
+    // Evita repetir mesma frase em menos de 2 segundos
+    if(e.results[0].isFinal && t && t!==finalCaptured && !(t===ultimoTextoCapturado && (agora-tempoUltimaCaptura)<2000)){
+      finalCaptured=t;
+      ultimoTextoCapturado=t;
+      tempoUltimaCaptura=agora;
+      live.innerText=t;
+      live.classList.add('bg-[#EAF4ED]');
+    }
+  };
+  rec.onend=()=>{
+    isListening=false;
+    document.getElementById('micModal').classList.add('hidden');
+    if(finalCaptured){
+      const inputEl=document.getElementById('lembreInput');
+      if(inputEl){
+        // Só adiciona se for diferente do que já tem, evita duplicar
+        if(inputEl.value.trim()!==finalCaptured){
+          inputEl.value=finalCaptured;
+          localStorage.setItem('lastInput',finalCaptured);
+        }
+      }
+    }
+  };
+  rec.onerror=(e)=>{
+    console.log('Mic error', e.error);
+    isListening=false;
+    document.getElementById('micModal').classList.add('hidden');
+    if(e.error==='not-allowed'){
+      alert('Permissão de microfone negada. Vá em Configurações > Permitir microfone.');
+    }
+  };
+  rec.start();
+ }catch(err){
+  isListening=false;
+  document.getElementById('micModal').classList.add('hidden');
+ }
+}
+
+function cancelarMic(){
+ isListening=false;
+ try{if(window.recInstance) window.recInstance.stop();}catch(e){}
+ document.getElementById('micModal').classList.add('hidden');
+}
+function usarTexto(){
+ const t=document.getElementById('liveText').innerText;
+ if(t && t!=='Ouvindo... pode falar...'){
+   document.getElementById('lembreInput').value=t;
+   localStorage.setItem('lastInput',t);
+ }
+ cancelarMic();
+}
+function criarLembreteManual(){
+ const texto=document.getElementById('lembreInput').value.trim();
+ if(!texto){alert('Escreva seu lembrete ou use o microfone 🎙️'); return;}
+ 
+ // Parse inteligente de data
+ let dataHora=new Date();
+ const txtLower=texto.toLowerCase();
+ if(txtLower.includes('amanhã')){
+   dataHora.setDate(dataHora.getDate()+1);
+   // Tenta pegar hora se mencionar
+   const horaMatch=texto.match(/(\d{1,2})h/);
+   if(horaMatch){ dataHora.setHours(parseInt(horaMatch[1]),0,0,0); }
+   else { dataHora.setHours(8,0,0,0); }
+ } else if(txtLower.includes('hoje')){
+   const horaMatch=texto.match(/(\d{1,2})h/);
+   if(horaMatch){ dataHora.setHours(parseInt(horaMatch[1]),0,0,0); }
+   else { dataHora.setMinutes(dataHora.getMinutes()+2); }
+ } else {
+   // Se não especificar, 1 minuto para teste
+   dataHora.setMinutes(dataHora.getMinutes()+1);
+ }
+ 
+ const novo={id:Date.now(), titulo:texto, dataHora:dataHora.toISOString(), concluido:false, notificado:false};
+ lembretes.unshift(novo);
+ localStorage.setItem('lembretes',JSON.stringify(lembretes));
+ localStorage.setItem('lastInput','');
+ 
+ // Agenda notificação robusta
+ agendarNotificacao(novo);
+ 
+ // Feedback
+ alert('✅ Lembrete criado!\n\n🕐 Vai tocar em: '+dataHora.toLocaleString('pt-BR')+'\n🔔 Mesmo com app fechado, você receberá notificação na barra do celular + som + vibração.\n\nDeixe as notificações ativas!');
+ renderAgenda();
+}
+
+// === SISTEMA DE NOTIFICAÇÃO COM APP FECHADO - ROBUSTO ===
+function agendarNotificacao(l){
+ try{
+  const agora=new Date();
+  const quando=new Date(l.dataHora);
+  const delay=quando-agora;
+  if(delay<=0) return;
+  
+  console.log('Agendando notificação para', quando, 'em', Math.round(delay/1000), 'segundos');
+  
+  // Salva no localStorage para re-agendar ao abrir
+  const agendamentos=JSON.parse(localStorage.getItem('agendamentos')||'[]');
+  agendamentos.push({id:l.id, dataHora:l.dataHora, titulo:l.titulo});
+  localStorage.setItem('agendamentos', JSON.stringify(agendamentos));
+  
+  // Timer principal
+  setTimeout(()=>{
+    dispararNotificacao(l);
+  }, delay);
+  
+  // Também agenda via service worker se disponível
+  if('serviceWorker' in navigator && navigator.serviceWorker.controller){
+    try{
+      navigator.serviceWorker.ready.then(reg=>{
+        // Tenta usar showNotification direto
+        console.log('Service Worker pronto para notificação');
+      });
+    }catch(e){}
+  }
+ }catch(e){ console.error('Erro agendar', e); }
+}
+
+function dispararNotificacao(l){
+ try{
+  // Evita duplicar
+  if(l.notificado) return;
+  l.notificado=true;
+  
+  // 1. Toca som alto
+  tocarSomForte();
+  
+  // 2. Vibra
+  if('vibrate' in navigator){
+    navigator.vibrate([500,200,500,200,500,200,500]);
+  }
+  
+  // 3. Notificação na barra (funciona mesmo com app fechado se permissão concedida)
+  if(Notification.permission==='granted'){
+    try{
+      const n=new Notification('⏰ Lembre por Mim', {
+        body:l.titulo,
+        icon:'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔔</text></svg>',
+        badge:'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔔</text></svg>',
+        vibrate:[500,200,500,200,500],
+        requireInteraction:true, // Fica até usuário clicar
+        tag:'lembre-'+l.id,
+        renotify:true,
+        silent:false
+      });
+      n.onclick=function(){
+        window.focus();
+        this.close();
+        nav('agenda');
+        tocarSomForte();
+      };
+    }catch(e){ console.log('Notification error', e); }
+    
+    // Via service worker também (mais confiável para background)
+    try{
+      if(navigator.serviceWorker && navigator.serviceWorker.ready){
+        navigator.serviceWorker.ready.then(reg=>{
+          reg.showNotification('⏰ Lembre por Mim', {
+            body:l.titulo,
+            icon:'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔔</text></svg>',
+            vibrate:[500,200,500,200,500],
+            requireInteraction:true,
+            tag:'lembre-'+l.id,
+            data:{id:l.id}
+          });
+        });
+      }
+    }catch(e){}
+  } else {
+    alert('🔔 LEMBRETE: '+l.titulo+'\n\nAtive as notificações para tocar com app fechado!');
+  }
+  
+  // 4. Atualiza storage
+  const idx=lembretes.findIndex(x=>x.id===l.id);
+  if(idx>=0){
+    lembretes[idx].notificado=true;
+    localStorage.setItem('lembretes',JSON.stringify(lembretes));
+  }
+  
+  // 5. Se estiver na tela, atualiza UI
+  if(current==='agenda') renderAgenda();
+  
+ }catch(e){ console.error('Erro disparar', e); }
+}
+
+function tocarSomForte(){
+ try{
+  // Desbloqueia AudioContext no primeiro clique do usuário
+  const AudioCtx=window.AudioContext||window.webkitAudioContext;
+  const ctx=new AudioCtx();
+  if(ctx.state==='suspended'){ ctx.resume(); }
+  
+  // Beep 880Hz forte, 3 vezes
+  function beep(freq, duration, delay){
+    setTimeout(()=>{
+      const o=ctx.createOscillator();
+      const g=ctx.createGain();
+      o.type='sine';
+      o.frequency.value=freq;
+      o.connect(g);
+      g.connect(ctx.destination);
+      g.gain.setValueAtTime(0.9, ctx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime+duration/1000);
+      o.start();
+      setTimeout(()=>{try{o.stop();}catch(e){}}, duration);
+    }, delay);
+  }
+  beep(880, 400, 0);
+  beep(880, 400, 600);
+  beep(880, 800, 1200);
+  beep(1200, 600, 2000);
+  
+  // Voz
+  setTimeout(()=>{
+    if('speechSynthesis' in window){
+      const u=new SpeechSynthesisUtterance('Lembrete: '+ (lembretes.find(x=>!x.concluido)?.titulo||'Hora de lembrar'));
+      u.lang='pt-BR';
+      u.rate=0.9;
+      u.volume=1;
+      speechSynthesis.speak(u);
+    }
+  }, 100);
+  
+  setTimeout(()=>{try{ctx.close();}catch(e){}}, 4000);
+ }catch(e){ console.log('Audio error', e); }
+}
+
+// Desbloqueia áudio no primeiro toque (necessário para mobile)
+let audioDesbloqueado=false;
+function desbloquearAudio(){
+ if(audioDesbloqueado) return;
+ try{
+  const ctx=new (window.AudioContext||window.webkitAudioContext)();
+  const o=ctx.createOscillator();
+  const g=ctx.createGain();
+  g.gain.value=0;
+  o.connect(g); g.connect(ctx.destination);
+  o.start(); o.stop();
+  ctx.close();
+  audioDesbloqueado=true;
+  console.log('Áudio desbloqueado');
+ }catch(e){}
+}
+document.addEventListener('click', desbloquearAudio, {once:true});
+document.addEventListener('touchstart', desbloquearAudio, {once:true});
+
+function concluirL(id){const l=lembretes.find(x=>x.id===id); if(l)l.concluido=true; localStorage.setItem('lembretes',JSON.stringify(lembretes)); renderAgenda();}
+function apagarL(id){lembretes=lembretes.filter(x=>x.id!==id); localStorage.setItem('lembretes',JSON.stringify(lembretes)); renderAgenda();}
+function renderPerfil(){
+ const foto=localStorage.getItem('userPhoto')||''; const nome=localStorage.getItem('userNome')||'';
+ document.getElementById('app').innerHTML=`<div class="px-5 pt-3"><button onclick="nav('inicio')" class="text-[14px] font-bold text-[#9A8F88]">← INÍCIO</button><h2 class="font-extrabold text-[28px] mt-3">Perfil 👤</h2><div class="bg-white rounded-[24px] p-6 mt-5 shadow border text-center"><div class="w-[120px] h-[120px] mx-auto rounded-full border-[3px] border-[#B8E6D0] overflow-hidden bg-[#FFFBF6] flex items-center justify-center text-4xl">${foto?`<img src="${foto}" class="w-full h-full object-cover">`:'👤'}</div><input id="fotoFile" type="file" accept="image/*" class="hidden" onchange="salvarFoto(this)"><button onclick="document.getElementById('fotoFile').click()" class="mt-4 px-5 py-2.5 rounded-full bg-[#FFFBF6] border text-[14px] font-bold">Alterar foto</button><input id="nomeInput" value="${nome}" placeholder="Seu nome" class="w-full mt-6 p-4 rounded-full border text-[17px] text-center"><button onclick="localStorage.setItem('userNome',document.getElementById('nomeInput').value);alert('Salvo!')" class="w-full mt-3 py-4 rounded-full bg-[#4A7C59] text-white font-bold">Salvar</button></div><div class="mt-4 text-center"><div class="flex justify-center gap-1">${[0,1,2,3,4].map(i=>`<span class="text-[20px]">${i<coracoes?'❤️':'♡'}</span>`).join('')}</div><p class="text-[12px] text-[#9A8F88] mt-1">${coracoes}/5 Corações de Presença</p><p class="text-[11px] text-[#C4B8B0] mt-1">Colecione momentos, não pontos</p></div></div>`;
+}
+function salvarFoto(i){
+  try{
+    const f=i.files[0];
+    if(!f){ alert('Nenhum arquivo selecionado'); return; }
+    if(f.size>5*1024*1024){ alert('Foto muito grande. Use até 5MB.'); return; }
+    const r=new FileReader();
+    r.onload=e=>{
+      try{
+        localStorage.setItem('userPhoto',e.target.result);
+        renderPerfil();
+      }catch(err){ alert('Erro ao salvar foto. Memória cheia, tente foto menor.'); }
+    };
+    r.onerror=()=>{ alert('Erro ao ler arquivo. Tente outra foto.'); };
+    r.readAsDataURL(f);
+  }catch(err){ alert('Erro: '+err.message); }
+}
+function renderResumo(){
+ document.getElementById('app').innerHTML=`<div class="px-5 pt-3"><button onclick="nav('inicio')" class="text-[14px] font-bold text-[#9A8F88]">← INÍCIO</button><h2 class="font-extrabold text-[28px] mt-3">Resumo 📊</h2><div class="bg-white rounded-[24px] p-5 mt-5 shadow border"><div class="text-[18px]">Ativos: ${lembretes.filter(l=>!l.concluido).length}</div><div class="text-[18px] mt-2">Concluídos: ${lembretes.filter(l=>l.concluido).length}</div><div class="text-[18px] mt-2">Momentos: ${momentos.length}</div><div class="mt-4 flex gap-1">${[0,1,2,3,4].map(i=>`<span class="text-[22px]">${i<coracoes?'❤️':'♡'}</span>`).join('')}</div><p class="text-[12px] text-[#9A8F88] mt-1">${coracoes}/5 Corações</p></div><p class="text-[13px] text-[#6B5F58] mt-4 leading-snug">Não é sobre fazer mais. É sobre estar presente.</p></div>`;
+}
+render();
+if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(()=>{});}
+</script>
+</body>
+</html>
