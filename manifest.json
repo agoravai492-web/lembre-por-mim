@@ -1,15 +1,63 @@
 {
-  "name": "Lembre por Mim",
+  "name": "Lembre por Mim - Momentos em Família",
   "short_name": "Lembre por Mim",
-  "start_url": "/",
+  "description": "Menos tela. Mais presença. Mais vida.",
+  "start_url": "/lembre-por-mim/",
+  "scope": "/lembre-por-mim/",
   "display": "standalone",
-  "background_color": "#FFF8F0",
-  "theme_color": "#4A7C59",
+  "display_override": [
+    "standalone",
+    "window-controls-overlay"
+  ],
+  "orientation": "portrait",
+  "background_color": "#000000",
+  "theme_color": "#000000",
   "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
     {
       "src": "icon-512.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-192-maskable.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "icon-512-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Novo Lembrete",
+      "url": "/lembre-por-mim/?action=new",
+      "icons": [
+        {
+          "src": "icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Momentos em Família",
+      "url": "/lembre-por-mim/?tab=familia",
+      "icons": [
+        {
+          "src": "icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
     }
   ]
 }

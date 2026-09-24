@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<meta name="theme-color" content="#4A7C59">
+<meta name="theme-color" content="#000000">
 <title>Lembre por Mim - Momentos em Família</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Dancing+Script:wght@600;700&display=swap" rel="stylesheet">
@@ -347,31 +347,80 @@ function render(){
  else if(current==='resumo') renderResumo();
 }
 
+
 function renderInicio(){
+ const hora = new Date().getHours();
+ let saudacao = "Bom dia!";
+ if(hora>=12 && hora<18) saudacao = "Boa tarde!";
+ if(hora>=18) saudacao = "Boa noite!";
+ const emojiLua = hora>=18 ? "🌙" : "☀️";
  document.getElementById('app').innerHTML=`
- <div class="px-5 pt-4">
-  <h1 class="cursive text-[38px] leading-none text-[#2C2A26]">Bom dia! ☀️</h1>
-  <p class="text-[15px] text-[#6B5F58] mt-1 leading-snug">Que seu dia seja leve e cheio de presença.</p>
-  
-  <div class="mt-4 bg-gradient-to-br from-[#D9EAD3] to-[#FFF6C5] rounded-[20px] p-4 flex items-center gap-3 border border-[#C8DCC0]/40">
-   <div class="w-11 h-11 rounded-full bg-white flex items-center justify-center text-xl shadow-sm">☀️</div>
-   <div><div class="font-extrabold text-[17px] text-[#2C2A26]">Família em primeiro lugar</div><div class="text-[13px] text-[#5A6B55]">Você presente, eu cuido do resto</div></div>
+ <div class="px-0">
+  <!-- HEADER like photo 1: bell top left, logo center, menu top right -->
+  <div class="px-5 pt-2 pb-2 flex justify-between items-center">
+   <button class="w-12 h-12 rounded-full bg-white shadow flex items-center justify-center text-xl">🔔</button>
+   <div class="flex flex-col items-center">
+    <img src="icon-192.png" class="w-[78px] h-[78px] object-contain" onerror="this.style.display='none'; this.nextElementSibling.style.display='block'">
+    <div style="display:none" class="text-4xl">💚💗</div>
+   </div>
+   <button class="w-12 h-12 rounded-full bg-white shadow flex items-center justify-center text-xl">☰</button>
   </div>
 
-  <div class="mt-4 grid grid-cols-2 gap-3">
-   <button onclick="nav('agenda')" class="bg-white rounded-[22px] p-4 text-left card-shadow border border-black/5 active:scale-[0.97] transition"><div class="w-12 h-12 bg-[#D9EAD3] rounded-full flex items-center justify-center text-xl">🔔</div><div class="font-extrabold text-[16px] mt-3 leading-tight">Lembre por Mim</div><div class="text-[12px] text-[#8A7E75] mt-1">Seus lembretes falados</div></button>
-   <button onclick="nav('familia')" class="bg-white rounded-[22px] p-4 text-left card-shadow border border-black/5 active:scale-[0.97] transition"><div class="w-12 h-12 bg-[#FFD8D8] rounded-full flex items-center justify-center text-xl">❤️</div><div class="font-extrabold text-[16px] mt-3 leading-tight">Momentos em Família</div><div class="text-[12px] text-[#8A7E75] mt-1">Menos tela. Mais presença.</div></button>
-   <button onclick="nav('esperanca')" class="bg-white rounded-[22px] p-4 text-left card-shadow border border-black/5 active:scale-[0.97] transition"><div class="w-12 h-12 bg-[#FFF3C4] rounded-full flex items-center justify-center text-xl">🌱</div><div class="font-extrabold text-[16px] mt-3 leading-tight">Um minuto de esperança</div><div class="text-[12px] text-[#8A7E75] mt-1">Respire fundo</div></button>
-   <button onclick="nav('momentos')" class="bg-white rounded-[22px] p-4 text-left card-shadow border border-black/5 active:scale-[0.97] transition"><div class="w-12 h-12 bg-[#D6E8FF] rounded-full flex items-center justify-center text-xl">📸</div><div class="font-extrabold text-[16px] mt-3 leading-tight">Nossos Momentos</div><div class="text-[12px] text-[#8A7E75] mt-1">Guardar memórias</div></button>
+  <div class="px-5 text-center">
+   <div class="font-extrabold text-[18px] tracking-[0.08em] text-[#4A6741]">LEMBRE POR MIM</div>
+   <div class="text-[15px] text-[#9A8F88] mt-1 leading-snug">Eu cuido da sua rotina. Você vive o que<br>realmente importa.</div>
   </div>
 
-  <div class="mt-8 flex items-center justify-center gap-2">
-   <div class="flex gap-1">${[0,1,2,3,4].map(i=>`<span class="text-[18px]">${i<coracoes?'❤️':'♡'}</span>`).join('')}</div>
-   <span class="text-[12px] text-[#9A8F88]">${coracoes}/5 Corações de Presença</span>
+  <!-- Boa noite card like photo 1 -->
+  <div class="mx-5 mt-6 relative overflow-hidden rounded-[28px] bg-[#FFFBF6] border border-black/5 p-6 min-h-[138px]">
+   <div class="absolute -right-10 -top-6 w-[160px] h-[160px] bg-[#FFF0A8] rounded-[36px] rotate-12"></div>
+   <div class="absolute right-6 bottom-0 w-[120px] h-[84px] bg-[#BFE9D3] rounded-t-[36px] rotate-6"></div>
+   <div class="relative z-10">
+    <div class="flex items-center gap-2">
+     <span class="cursive text-[38px] leading-none text-[#2C2A26]">${saudacao}</span>
+     <span class="text-[32px]">${emojiLua}</span>
+    </div>
+    <p class="text-[16px] text-[#8B7F77] mt-2">Vamos com calma. Um passo de cada vez.</p>
+   </div>
   </div>
-  <p class="cursive text-center text-[20px] text-[#8A7E75] mt-6">A felicidade pode ser encontrada no simples.</p>
+
+  <!-- 4 cards exactly like photo 1 -->
+  <div class="px-5 mt-6 grid grid-cols-2 gap-4">
+   <button onclick="nav('agenda')" class="bg-white rounded-[26px] p-5 text-center card-shadow border border-black/5 active:scale-[0.97] transition min-h-[184px] flex flex-col items-center justify-center">
+    <div class="w-[84px] h-[84px] rounded-full bg-[#CFF0D8] flex items-center justify-center text-3xl">🔔</div>
+    <div class="font-extrabold text-[15px] mt-4 leading-tight text-[#2F4A32] tracking-wide">LEMBRE POR MIM</div>
+    <div class="text-[13px] text-[#9A8F88] mt-2">Fale e eu anoto</div>
+   </button>
+
+   <button onclick="nav('familia')" class="bg-white rounded-[26px] p-5 text-center card-shadow border border-black/5 active:scale-[0.97] transition min-h-[184px] flex flex-col items-center justify-center">
+    <div class="w-[84px] h-[84px] rounded-full bg-[#FFD8DD] flex items-center justify-center overflow-hidden">
+     <div class="text-[28px]">👨‍👩‍👧‍👦</div>
+    </div>
+    <div class="font-extrabold text-[15px] mt-4 leading-tight text-[#2F4A32] tracking-wide">VAMOS BRINCAR?</div>
+    <div class="text-[13px] text-[#9A8F88] mt-2">Momentos em família</div>
+   </button>
+
+   <button onclick="nav('esperanca')" class="bg-white rounded-[26px] p-5 text-center card-shadow border border-black/5 active:scale-[0.97] transition min-h-[184px] flex flex-col items-center justify-center">
+    <div class="w-[84px] h-[84px] rounded-full bg-[#FFF5C0] flex items-center justify-center text-3xl">🌱</div>
+    <div class="font-extrabold text-[13px] mt-4 leading-tight text-[#2F4A32] tracking-wide">UM MINUTO DE<br>ESPERANÇA</div>
+    <div class="text-[13px] text-[#9A8F88] mt-2">Uma frase por dia</div>
+   </button>
+
+   <button onclick="nav('momentos')" class="bg-white rounded-[26px] p-5 text-center card-shadow border border-black/5 active:scale-[0.97] transition min-h-[184px] flex flex-col items-center justify-center">
+    <div class="w-[84px] h-[84px] rounded-full bg-[#DCE9FF] flex items-center justify-center overflow-hidden">
+     <div class="text-[26px]">📚</div>
+    </div>
+    <div class="font-extrabold text-[15px] mt-4 leading-tight text-[#2F4A32] tracking-wide">NOSSOS MOMENTOS</div>
+    <div class="text-[13px] text-[#9A8F88] mt-2">Seu álbum de memórias</div>
+   </button>
+  </div>
+
+  <div class="mt-10 pb-6 text-center">
+   <p class="cursive text-[22px] text-[#A69E97] leading-snug">"Em família a calma abre espaço para<br>o amor crescer"</p>
+  </div>
  </div>`;
 }
+
 
 // === NOVO MÓDULO MOMENTOS EM FAMÍLIA CONFORME PROMPT ===
 function renderFamiliaInicio(){
@@ -580,39 +629,177 @@ function renderEsperanca(){
  const f=frases[fraseIndex%frases.length];
  document.getElementById('app').innerHTML=`<div class="px-5 pt-3"><button onclick="nav('inicio')" class="text-[14px] font-bold text-[#9A8F88]">← INÍCIO</button><h2 class="font-extrabold text-[28px] mt-3">Um minuto de esperança 🌱</h2><div class="bg-white rounded-[24px] p-7 mt-5 shadow border text-center"><p class="cursive text-[28px] leading-snug">"${f}"</p><div class="grid grid-cols-2 gap-3 mt-8"><button onclick="fraseIndex++;localStorage.setItem('fraseIndex',fraseIndex);renderEsperanca()" class="py-4 rounded-full border text-[16px] font-bold">Outra</button><button onclick="navigator.share?navigator.share({text:'${f.replace(/'/g,"")}'}).catch(()=>{}):(navigator.clipboard.writeText('${f.replace(/'/g,"")}'),alert('Copiado!'))" class="py-4 rounded-full bg-[#4A7C59] text-white text-[16px] font-bold">Compartilhar</button></div></div></div>`;
 }
+
 function renderMomentos(){
- document.getElementById('app').innerHTML=`<div class="px-5 pt-3"><button onclick="nav('inicio')" class="text-[14px] font-bold text-[#9A8F88]">← INÍCIO</button><h2 class="font-extrabold text-[28px] mt-3">Nossos Momentos 📸</h2><p class="text-[14px] text-[#6B5F58] mt-1">${momentos.length} memórias • ${coracoes}/5 ❤️</p><div class="flex gap-1 mt-2">${[0,1,2,3,4].map(i=>`<span>${i<coracoes?'❤️':'♡'}</span>`).join('')}</div><button onclick="criarMomento()" class="w-full mt-4 py-4 rounded-full bg-[#2C2A26] text-white font-bold text-[16px]">+ Criar momento</button><div class="grid grid-cols-2 gap-3 mt-5">${momentos.map(m=>`<div class="bg-white rounded-[20px] p-3 shadow border"><div class="h-24 bg-[#FFFBF6] rounded-[14px] flex items-center justify-center overflow-hidden text-2xl">${m.foto?`<img src="${m.foto}" class="w-full h-full object-cover">`:'📸'}</div><div class="font-bold text-[14px] mt-2 truncate">${m.titulo}</div><div class="text-[11px] text-gray-400">${m.data}</div><div class="flex gap-1 mt-2"><button onclick="alert('${m.desc.replace(/'/g,"")}')" class="flex-1 py-2 rounded-full bg-[#FFFBF6] border text-[12px]">Ver</button><button onclick="if(confirm('Apagar?')){momentos=momentos.filter(x=>x.id!==${m.id}); localStorage.setItem('momentos',JSON.stringify(momentos)); renderMomentos();}" class="px-3 py-2 rounded-full bg-red-50 text-red-500 text-[12px]">X</button></div></div>`).join('')||'<p class="col-span-2 text-center text-[15px] text-gray-400 mt-12">Nenhum momento ainda. Viva um em Família ❤️</p>'}</div></div>`;
+ document.getElementById('app').innerHTML=`<div class="px-5 pt-3"><button onclick="nav('inicio')" class="text-[14px] font-bold text-[#9A8F88]">← INÍCIO</button><h2 class="font-extrabold text-[28px] mt-3">Nossos momentos</h2><p class="text-[14px] text-[#6B5F58] mt-1">${momentos.length} memórias • ${coracoes}/5 ❤️</p><div class="flex gap-1 mt-2">${[0,1,2,3,4].map(i=>`<span>${i<coracoes?'❤️':'♡'}</span>`).join('')}</div><button onclick="criarMomento()" class="w-full mt-4 py-4 rounded-full bg-[#2C2A26] text-white font-bold text-[16px]">+ Criar momento</button><div class="grid grid-cols-2 gap-3 mt-5">${momentos.map(m=>`<div class="bg-white rounded-[20px] p-3 shadow border"><div class="h-24 bg-[#FFFBF6] rounded-[14px] flex items-center justify-center overflow-hidden text-2xl">${m.foto?`<img src="${m.foto}" class="w-full h-full object-cover">`:'📸'}</div><div class="font-bold text-[14px] mt-2 truncate">${m.titulo}</div><div class="text-[11px] text-gray-400">${m.data}</div><div class="flex gap-1 mt-2"><button onclick="alert('${m.desc.replace(/'/g,"")}')" class="flex-1 py-2 rounded-full bg-[#FFFBF6] border text-[12px]">Ver</button><button onclick="if(confirm('Apagar?')){momentos=momentos.filter(x=>x.id!==${m.id}); localStorage.setItem('momentos',JSON.stringify(momentos)); renderMomentos();}" class="px-3 py-2 rounded-full bg-red-50 text-red-500 text-[12px]">X</button></div></div>`).join('')||'<p class="col-span-2 text-center text-[15px] text-gray-400 mt-12">Nenhum momento ainda. Viva um em Família ❤️</p>'}</div></div>`;
 }
-function criarMomento(){document.getElementById('app').innerHTML=`<div class="px-5 pt-3"><button onclick="nav('momentos')" class="text-[14px]">← VOLTAR</button><h2 class="font-bold text-[24px] mt-3">Novo momento</h2><input id="fotoInput" type="file" accept="image/*" class="mt-4 text-[14px]"><input id="tit" placeholder="Título" class="w-full mt-4 p-4 rounded-full border text-[16px]"><textarea id="desc" placeholder="Como foi?" class="w-full mt-3 p-4 rounded-[20px] border text-[16px] h-24"></textarea><button onclick="salvarMomento()" class="w-full mt-4 py-4 rounded-full bg-[#2C2A26] text-white font-bold">Salvar ❤️</button></div>`;}
-function salvarMomento(){
-  try{
-    const titEl=document.getElementById('tit');
-    const descEl=document.getElementById('desc');
-    const fileInput=document.getElementById('fotoInput');
-    const tit=titEl?titEl.value||'Momento':'Momento';
-    const desc=descEl?descEl.value||'':'';
-    const file=fileInput && fileInput.files ? fileInput.files[0] : null;
-    if(file){
-      if(file.size>5*1024*1024){ alert('Foto muito grande. Use até 5MB.'); return; }
-      const r=new FileReader();
-      r.onload=e=>{
-        try{
-          momentos.unshift({id:Date.now(), titulo:tit, desc, data:new Date().toLocaleDateString(), foto:e.target.result});
-          localStorage.setItem('momentos',JSON.stringify(momentos));
-          atualizarCoracoes();
-          nav('momentos');
-        }catch(err){ alert('Erro ao salvar: memória cheia. Tente foto menor.'); }
+
+let momentoFotoTemp = null;
+let momentoFotoNome = '';
+
+function criarMomento(){
+ document.getElementById('app').innerHTML=`
+ <div class="px-5 pt-3 pb-28">
+  <h2 class="cursive text-[34px] font-bold text-[#2C2A26] mt-2">Criar momento</h2>
+
+  <!-- Area foto exatamente como foto 2 -->
+  <div id="fotoArea" onclick="document.getElementById('fotoInputReal').click()" class="mt-6 w-full h-[240px] rounded-[28px] border-[2px] border-dashed border-[#E8DDC6] bg-[#FFFBF3] flex flex-col items-center justify-center cursor-pointer overflow-hidden active:scale-[0.98] transition">
+   <div id="fotoPlaceholder" class="flex flex-col items-center">
+    <div class="text-3xl">📷</div>
+    <div class="text-[16px] font-bold text-[#9A8F88] mt-2">Escolher foto</div>
+   </div>
+   <img id="fotoPreview" class="hidden w-full h-full object-cover rounded-[26px]">
+  </div>
+  <input id="fotoInputReal" type="file" accept="image/*" class="hidden" onchange="handleFotoMomento(this)">
+
+  <!-- Título -->
+  <div class="mt-6">
+   <input id="tit" placeholder="Título deste momento" class="w-full p-5 rounded-full bg-[#FFFBF6] border border-[#EDE3D3] text-[16px] outline-none focus:border-[#4A7C59]">
+  </div>
+
+  <!-- Descrição -->
+  <div class="mt-4">
+   <textarea id="desc" placeholder="Conte um pouquinho sobre esse dia..." class="w-full p-5 rounded-[28px] bg-[#FFFBF6] border border-[#EDE3D3] text-[16px] h-[132px] outline-none resize-none focus:border-[#4A7C59]"></textarea>
+  </div>
+
+  <div class="mt-3 text-[14px] text-[#9A8F88]">Data: ${new Date().toLocaleDateString('pt-BR', {day:'numeric', month:'long', year:'numeric'})}</div>
+
+  <div class="mt-8 flex gap-3">
+   <button onclick="nav('momentos')" class="flex-1 py-4 rounded-full bg-white border border-[#EDE3D3] font-bold text-[16px] text-[#8A7E75]">Cancelar</button>
+   <button onclick="salvarMomentoCorrigido()" class="flex-1 py-4 rounded-full bg-[#9DB5A0] text-white font-bold text-[16px] active:scale-[0.97]">Guardar</button>
+  </div>
+ </div>`;
+}
+
+function handleFotoMomento(input){
+ try{
+  const file = input.files && input.files[0];
+  if(!file){ momentoFotoTemp=null; return; }
+  
+  // Validations
+  if(file.size > 15*1024*1024){
+    alert('Foto muito grande (máx 15MB). Tente outra menor.');
+    input.value='';
+    return;
+  }
+  const validTypes = ['image/jpeg','image/jpg','image/png','image/webp','image/heic','image/heif'];
+  // allow any image/* but warn if not common
+  if(!file.type.startsWith('image/')){
+    alert('Arquivo não é imagem. Escolha uma foto.');
+    input.value='';
+    return;
+  }
+
+  momentoFotoNome = file.name;
+  
+  const reader = new FileReader();
+  reader.onload = function(e){
+    try{
+      const img = new Image();
+      img.onload = function(){
+        // Compress to max 1024px and 0.7 quality to avoid localStorage overflow
+        const canvas = document.createElement('canvas');
+        let w = img.width, h = img.height;
+        const maxSide = 1024;
+        if(w>maxSide || h>maxSide){
+          if(w>h){ h = Math.round(h*maxSide/w); w = maxSide; }
+          else { w = Math.round(w*maxSide/h); h = maxSide; }
+        }
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img,0,0,w,h);
+        // Compress
+        let compressed = canvas.toDataURL('image/jpeg', 0.7);
+        momentoFotoTemp = compressed;
+        
+        // Show preview
+        const preview = document.getElementById('fotoPreview');
+        const placeholder = document.getElementById('fotoPlaceholder');
+        if(preview){
+          preview.src = compressed;
+          preview.classList.remove('hidden');
+        }
+        if(placeholder) placeholder.classList.add('hidden');
+        document.getElementById('fotoArea').classList.remove('border-dashed');
+        document.getElementById('fotoArea').classList.add('border-solid');
       };
-      r.onerror=()=>{ alert('Erro ao ler foto. Tente outra.'); };
-      r.readAsDataURL(file);
-    }else{
-      momentos.unshift({id:Date.now(), titulo:tit, desc, data:new Date().toLocaleDateString(), foto:''});
-      localStorage.setItem('momentos',JSON.stringify(momentos));
-      atualizarCoracoes();
-      nav('momentos');
+      img.onerror = function(){
+        alert('Erro ao ler foto. Tente outra (JPEG ou PNG).');
+        momentoFotoTemp=null;
+      };
+      img.src = e.target.result;
+    }catch(err){
+      alert('Erro ao processar foto: '+err.message);
+      momentoFotoTemp=null;
     }
-  }catch(err){ alert('Erro: '+err.message); }
+  };
+  reader.onerror = function(){
+    alert('Erro ao ler foto. Tente outra.');
+    momentoFotoTemp=null;
+  };
+  reader.readAsDataURL(file);
+ }catch(err){
+  alert('Erro: '+err.message);
+  momentoFotoTemp=null;
+ }
 }
+
+function salvarMomentoCorrigido(){
+ try{
+  const titEl = document.getElementById('tit');
+  const descEl = document.getElementById('desc');
+  const titulo = (titEl && titEl.value.trim()) ? titEl.value.trim() : 'Nosso momento';
+  const desc = (descEl && descEl.value.trim()) ? descEl.value.trim() : '';
+
+  // Foto opcional - usa comprimida
+  let fotoFinal = momentoFotoTemp || '';
+
+  // Tenta salvar, com tratamento de quota exceeded
+  try{
+    const novo = {id:Date.now(), titulo:titulo, desc:desc, data:new Date().toLocaleDateString('pt-BR'), foto:fotoFinal};
+    momentos.unshift(novo);
+    localStorage.setItem('momentos', JSON.stringify(momentos));
+    // Limpa temp
+    momentoFotoTemp=null;
+    momentoFotoNome='';
+    atualizarCoracoes();
+    nav('momentos');
+  }catch(quotaErr){
+    // Se estourar localStorage, tenta sem foto ou foto menor
+    if(fotoFinal){
+      try{
+        // Tenta com qualidade menor
+        const novoSemFotoGrande = {id:Date.now(), titulo:titulo, desc:desc, data:new Date().toLocaleDateString('pt-BR'), foto:''};
+        // Remove foto do objeto e tenta
+        momentos.unshift(novoSemFotoGrande);
+        localStorage.setItem('momentos', JSON.stringify(momentos));
+        momentoFotoTemp=null;
+        atualizarCoracoes();
+        alert('Memória cheia, salvei sem foto. Apague momentos antigos para liberar espaço. ❤️');
+        nav('momentos');
+        return;
+      }catch(e2){
+        // Remove mais antigos se ainda falhar
+        momentos.pop();
+        try{
+          localStorage.setItem('momentos', JSON.stringify(momentos));
+        }catch(e3){}
+        alert('Memória do navegador cheia. Apague alguns momentos antigos e tente novamente.');
+        return;
+      }
+    }else{
+      alert('Erro ao salvar: memória cheia. Apague alguns momentos.');
+    }
+  }
+ }catch(err){
+  alert('Erro ao guardar: '+err.message);
+ }
+}
+
+// Mantem compatibilidade com funcao antiga chamada por outros lugares
+function salvarMomento(){ salvarMomentoCorrigido(); }
+
 
 let isListening=false;
 function pedirPermissaoNotificacao(){
