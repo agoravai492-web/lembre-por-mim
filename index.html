@@ -385,6 +385,7 @@ function renderInicio(){
   </div>
 
   <!-- 4 cards exactly like photo 1 -->
+  
   <div class="px-5 mt-6 grid grid-cols-2 gap-4">
    <button onclick="nav('agenda')" class="bg-white rounded-[26px] p-5 text-center card-shadow border border-black/5 active:scale-[0.97] transition min-h-[184px] flex flex-col items-center justify-center">
     <div class="w-[84px] h-[84px] rounded-full bg-[#CFF0D8] flex items-center justify-center text-3xl">🔔</div>
@@ -394,7 +395,8 @@ function renderInicio(){
 
    <button onclick="nav('familia')" class="bg-white rounded-[26px] p-5 text-center card-shadow border border-black/5 active:scale-[0.97] transition min-h-[184px] flex flex-col items-center justify-center">
     <div class="w-[84px] h-[84px] rounded-full bg-[#FFD8DD] flex items-center justify-center overflow-hidden">
-     <div class="text-[28px]">👨‍👩‍👧‍👦</div>
+     <img src="card-vamos-brincar.png" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='block'">
+     <div style="display:none" class="text-[28px]">👨‍👩‍👧‍👦</div>
     </div>
     <div class="font-extrabold text-[15px] mt-4 leading-tight text-[#2F4A32] tracking-wide">VAMOS BRINCAR?</div>
     <div class="text-[13px] text-[#9A8F88] mt-2">Momentos em família</div>
@@ -408,12 +410,14 @@ function renderInicio(){
 
    <button onclick="nav('momentos')" class="bg-white rounded-[26px] p-5 text-center card-shadow border border-black/5 active:scale-[0.97] transition min-h-[184px] flex flex-col items-center justify-center">
     <div class="w-[84px] h-[84px] rounded-full bg-[#DCE9FF] flex items-center justify-center overflow-hidden">
-     <div class="text-[26px]">📚</div>
+     <img src="card-nossos-momentos.png" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='block'">
+     <div style="display:none" class="text-[26px]">📚</div>
     </div>
     <div class="font-extrabold text-[15px] mt-4 leading-tight text-[#2F4A32] tracking-wide">NOSSOS MOMENTOS</div>
     <div class="text-[13px] text-[#9A8F88] mt-2">Seu álbum de memórias</div>
    </button>
   </div>
+
 
   <div class="mt-10 pb-6 text-center">
    <p class="cursive text-[22px] text-[#A69E97] leading-snug">"Em família a calma abre espaço para<br>o amor crescer"</p>
@@ -630,27 +634,140 @@ function renderEsperanca(){
  document.getElementById('app').innerHTML=`<div class="px-5 pt-3"><button onclick="nav('inicio')" class="text-[14px] font-bold text-[#9A8F88]">← INÍCIO</button><h2 class="font-extrabold text-[28px] mt-3">Um minuto de esperança 🌱</h2><div class="bg-white rounded-[24px] p-7 mt-5 shadow border text-center"><p class="cursive text-[28px] leading-snug">"${f}"</p><div class="grid grid-cols-2 gap-3 mt-8"><button onclick="fraseIndex++;localStorage.setItem('fraseIndex',fraseIndex);renderEsperanca()" class="py-4 rounded-full border text-[16px] font-bold">Outra</button><button onclick="navigator.share?navigator.share({text:'${f.replace(/'/g,"")}'}).catch(()=>{}):(navigator.clipboard.writeText('${f.replace(/'/g,"")}'),alert('Copiado!'))" class="py-4 rounded-full bg-[#4A7C59] text-white text-[16px] font-bold">Compartilhar</button></div></div></div>`;
 }
 
+
+function apagarMomento(id){
+ if(!confirm('Apagar este momento? Essa ação não pode ser desfeita.')) return;
+ try{
+  const idNum = Number(id);
+  console.log('Apagando', idNum, 'de', momentos.length);
+  // Método 1: filter
+  let novos = momentos.filter(x=> Number(x.id) !== idNum);
+  // Se filter não removeu (id diferente), tenta por índice
+  if(novos.length === momentos.length){
+    novos = momentos.filter((x,i)=> i !== idNum && Number(x.id) !== idNum);
+  }
+  momentos = novos;
+  // Força apagar do storage primeiro para liberar espaço
+  try{
+    localStorage.removeItem('momentos');
+  }catch(e){}
+  try{
+    localStorage.setItem('momentos', JSON.stringify(momentos));
+    console.log('Salvo após apagar', momentos.length);
+  }catch(e){
+    // Se ainda falhar, é porque storage lotado - limpa tudo e salva só os que couberem sem foto
+    console.error('Erro quota ao apagar', e);
+    try{
+      localStorage.removeItem('momentos');
+      // Tenta salvar sem fotos para recuperar
+      const semFotos = momentos.map(m=> ({...m, foto:''}));
+      try{
+        localStorage.setItem('momentos', JSON.stringify(semFotos));
+        alert('Memória cheia! Apaguei a foto mas mantive o momento. Para liberar espaço, apague momentos antigos.');
+      }catch(e2){
+        // Último recurso: limpa tudo
+        localStorage.removeItem('momentos');
+        momentos = [];
+        localStorage.setItem('momentos', '[]');
+        alert('Memória do navegador estava cheia. Limpei tudo para voltar a funcionar. ❤️');
+      }
+    }catch(e3){
+      alert('Erro ao apagar: '+e3.message+' - Tente em Configurações limpar dados do site.');
+    }
+  }
+  renderMomentos();
+ }catch(err){
+  alert('Erro ao apagar: '+err.message);
+  console.error(err);
+ }
+}
+
+function limparTodosMomentos(){
+ if(!confirm('Apagar TODOS os momentos? Isso limpa todas as fotos e libera memória.')) return;
+ if(!confirm('Tem certeza? Não dá pra voltar!')) return;
+ momentos = [];
+ try{
+  localStorage.removeItem('momentos');
+  localStorage.setItem('momentos','[]');
+ }catch(e){}
+ renderMomentos();
+ alert('Tudo apagado! Memória liberada. ❤️');
+}
+
+function verMomento(id){
+ const m = momentos.find(x=> Number(x.id)===Number(id));
+ if(!m) { alert('Momento não encontrado'); return; }
+ const modal = document.createElement('div');
+ modal.className='fixed inset-0 bg-black/60 z-[100] flex items-center justify-center p-5';
+ modal.onclick = (e)=>{ if(e.target===modal) modal.remove(); };
+ modal.innerHTML=`
+ <div class="bg-white rounded-[28px] max-w-[360px] w-full overflow-hidden">
+  ${m.foto?`<img src="${m.foto}" class="w-full h-[280px] object-cover">`:`<div class="h-32 bg-[#FFFBF6] flex items-center justify-center text-4xl">📸</div>`}
+  <div class="p-6">
+   <h3 class="font-extrabold text-[18px]">${(m.titulo||'').replace(/</g,'&lt;')}</h3>
+   <p class="text-[13px] text-gray-400 mt-1">${m.data||''}</p>
+   <p class="text-[15px] text-[#3D3A36] mt-3 leading-snug">${(m.desc||'Sem descrição').replace(/</g,'&lt;')}</p>
+   <div class="flex gap-2 mt-5">
+    <button onclick="apagarMomento(${m.id}); this.closest('.fixed').remove()" class="flex-1 py-3 rounded-full bg-red-50 text-red-600 font-bold border border-red-200">Apagar</button>
+    <button onclick="this.closest('.fixed').remove()" class="flex-1 py-3 rounded-full bg-[#2C2A26] text-white font-bold">Fechar</button>
+   </div>
+  </div>
+ </div>`;
+ document.body.appendChild(modal);
+}
+
+
 function renderMomentos(){
- document.getElementById('app').innerHTML=`<div class="px-5 pt-3"><button onclick="nav('inicio')" class="text-[14px] font-bold text-[#9A8F88]">← INÍCIO</button><h2 class="font-extrabold text-[28px] mt-3">Nossos momentos</h2><p class="text-[14px] text-[#6B5F58] mt-1">${momentos.length} memórias • ${coracoes}/5 ❤️</p><div class="flex gap-1 mt-2">${[0,1,2,3,4].map(i=>`<span>${i<coracoes?'❤️':'♡'}</span>`).join('')}</div><button onclick="criarMomento()" class="w-full mt-4 py-4 rounded-full bg-[#2C2A26] text-white font-bold text-[16px]">+ Criar momento</button><div class="grid grid-cols-2 gap-3 mt-5">${momentos.map(m=>`<div class="bg-white rounded-[20px] p-3 shadow border"><div class="h-24 bg-[#FFFBF6] rounded-[14px] flex items-center justify-center overflow-hidden text-2xl">${m.foto?`<img src="${m.foto}" class="w-full h-full object-cover">`:'📸'}</div><div class="font-bold text-[14px] mt-2 truncate">${m.titulo}</div><div class="text-[11px] text-gray-400">${m.data}</div><div class="flex gap-1 mt-2"><button onclick="alert('${m.desc.replace(/'/g,"")}')" class="flex-1 py-2 rounded-full bg-[#FFFBF6] border text-[12px]">Ver</button><button onclick="if(confirm('Apagar?')){momentos=momentos.filter(x=>x.id!==${m.id}); localStorage.setItem('momentos',JSON.stringify(momentos)); renderMomentos();}" class="px-3 py-2 rounded-full bg-red-50 text-red-500 text-[12px]">X</button></div></div>`).join('')||'<p class="col-span-2 text-center text-[15px] text-gray-400 mt-12">Nenhum momento ainda. Viva um em Família ❤️</p>'}</div></div>`;
+ document.getElementById('app').innerHTML=`
+ <div class="px-5 pt-3 pb-28">
+  <button onclick="nav('inicio')" class="text-[14px] font-bold text-[#9A8F88]">← INÍCIO</button>
+  <h2 class="font-extrabold text-[28px] mt-3">Nossos momentos</h2>
+  <p class="text-[14px] text-[#6B5F58] mt-1">${momentos.length} memórias • ${coracoes}/5 ❤️</p><button onclick="limparTodosMomentos()" class="text-[11px] text-red-400 mt-1 underline">Limpar tudo (liberar memória)</button>
+  <div class="flex gap-1 mt-2">${[0,1,2,3,4].map(i=>`<span>${i<coracoes?'❤️':'♡'}</span>`).join('')}</div>
+  <button onclick="criarMomento()" class="w-full mt-4 py-4 rounded-full bg-[#2C2A26] text-white font-bold text-[16px] active:scale-[0.97]">+ Criar momento</button>
+  <div class="grid grid-cols-2 gap-3 mt-5">
+   ${momentos.map(m=>`
+    <div class="bg-white rounded-[20px] p-3 shadow border">
+     <div class="h-24 bg-[#FFFBF6] rounded-[14px] flex items-center justify-center overflow-hidden text-2xl" onclick="verMomento(${m.id})">
+      ${m.foto?`<img src="${m.foto}" class="w-full h-full object-cover">`:'📸'}
+     </div>
+     <div class="font-bold text-[14px] mt-2 truncate">${(m.titulo||'').replace(/</g,'&lt;')}</div>
+     <div class="text-[11px] text-gray-400">${m.data||''}</div>
+     <div class="flex gap-1 mt-2">
+      <button onclick="verMomento(${m.id})" class="flex-1 py-2 rounded-full bg-[#FFFBF6] border text-[12px] font-bold">Ver</button>
+      <button onclick="apagarMomento(${m.id})" class="px-3 py-2 rounded-full bg-red-50 text-red-500 text-[12px] font-bold">✕</button>
+     </div>
+    </div>`).join('') || '<p class="col-span-2 text-center text-[15px] text-gray-400 mt-12">Nenhum momento ainda. Viva um em Família ❤️</p>'}
+  </div>
+ </div>`;
 }
 
 let momentoFotoTemp = null;
 let momentoFotoNome = '';
 
+function abrirGaleria(){
+ const input = document.getElementById('fotoInputReal');
+ if(input) input.click();
+}
+
 function criarMomento(){
+ momentoFotoTemp = null;
+ momentoFotoNome = '';
  document.getElementById('app').innerHTML=`
  <div class="px-5 pt-3 pb-28">
   <h2 class="cursive text-[34px] font-bold text-[#2C2A26] mt-2">Criar momento</h2>
 
-  <!-- Area foto exatamente como foto 2 -->
-  <div id="fotoArea" onclick="document.getElementById('fotoInputReal').click()" class="mt-6 w-full h-[240px] rounded-[28px] border-[2px] border-dashed border-[#E8DDC6] bg-[#FFFBF3] flex flex-col items-center justify-center cursor-pointer overflow-hidden active:scale-[0.98] transition">
-   <div id="fotoPlaceholder" class="flex flex-col items-center">
+  <!-- Area foto exatamente como foto 2 - CLICÁVEL -->
+  <div id="fotoArea" onclick="abrirGaleria()" class="mt-6 w-full h-[240px] rounded-[28px] border-[2px] border-dashed border-[#E8DDC6] bg-[#FFFBF3] flex flex-col items-center justify-center cursor-pointer overflow-hidden active:scale-[0.98] transition relative">
+   <div id="fotoPlaceholder" class="flex flex-col items-center pointer-events-none">
     <div class="text-3xl">📷</div>
     <div class="text-[16px] font-bold text-[#9A8F88] mt-2">Escolher foto</div>
+    <div class="text-[12px] text-[#B8AFA6] mt-1">Toque aqui</div>
    </div>
-   <img id="fotoPreview" class="hidden w-full h-full object-cover rounded-[26px]">
+   <img id="fotoPreview" class="hidden w-full h-full object-cover absolute inset-0 rounded-[26px]">
+   <div id="fotoTrocar" class="hidden absolute bottom-2 right-2 bg-black/70 text-white text-[11px] px-3 py-1 rounded-full">Trocar foto</div>
   </div>
-  <input id="fotoInputReal" type="file" accept="image/*" class="hidden" onchange="handleFotoMomento(this)">
+  <input id="fotoInputReal" type="file" accept="image/*" capture="environment" class="hidden" onchange="handleFotoMomento(this)">
 
   <!-- Título -->
   <div class="mt-6">
@@ -676,14 +793,11 @@ function handleFotoMomento(input){
   const file = input.files && input.files[0];
   if(!file){ momentoFotoTemp=null; return; }
   
-  // Validations
   if(file.size > 15*1024*1024){
     alert('Foto muito grande (máx 15MB). Tente outra menor.');
     input.value='';
     return;
   }
-  const validTypes = ['image/jpeg','image/jpg','image/png','image/webp','image/heic','image/heif'];
-  // allow any image/* but warn if not common
   if(!file.type.startsWith('image/')){
     alert('Arquivo não é imagem. Escolha uma foto.');
     input.value='';
@@ -697,10 +811,9 @@ function handleFotoMomento(input){
     try{
       const img = new Image();
       img.onload = function(){
-        // Compress to max 1024px and 0.7 quality to avoid localStorage overflow
         const canvas = document.createElement('canvas');
         let w = img.width, h = img.height;
-        const maxSide = 1024;
+        const maxSide = 800;
         if(w>maxSide || h>maxSide){
           if(w>h){ h = Math.round(h*maxSide/w); w = maxSide; }
           else { w = Math.round(w*maxSide/h); h = maxSide; }
@@ -709,34 +822,40 @@ function handleFotoMomento(input){
         canvas.height = h;
         const ctx = canvas.getContext('2d');
         ctx.drawImage(img,0,0,w,h);
-        // Compress
-        let compressed = canvas.toDataURL('image/jpeg', 0.7);
+        let compressed = canvas.toDataURL('image/jpeg', 0.5);
         momentoFotoTemp = compressed;
         
-        // Show preview
         const preview = document.getElementById('fotoPreview');
         const placeholder = document.getElementById('fotoPlaceholder');
+        const trocar = document.getElementById('fotoTrocar');
         if(preview){
           preview.src = compressed;
           preview.classList.remove('hidden');
         }
         if(placeholder) placeholder.classList.add('hidden');
-        document.getElementById('fotoArea').classList.remove('border-dashed');
-        document.getElementById('fotoArea').classList.add('border-solid');
+        if(trocar) trocar.classList.remove('hidden');
+        const area = document.getElementById('fotoArea');
+        if(area){
+          area.classList.remove('border-dashed');
+          area.classList.add('border-solid','border-[#9DB5A0]');
+        }
       };
       img.onerror = function(){
-        alert('Erro ao ler foto. Tente outra (JPEG ou PNG).');
+        alert('Erro ao ler foto. Tente outra foto JPEG ou PNG.');
         momentoFotoTemp=null;
+        input.value='';
       };
       img.src = e.target.result;
     }catch(err){
       alert('Erro ao processar foto: '+err.message);
       momentoFotoTemp=null;
+      input.value='';
     }
   };
   reader.onerror = function(){
     alert('Erro ao ler foto. Tente outra.');
     momentoFotoTemp=null;
+    input.value='';
   };
   reader.readAsDataURL(file);
  }catch(err){
@@ -752,39 +871,30 @@ function salvarMomentoCorrigido(){
   const titulo = (titEl && titEl.value.trim()) ? titEl.value.trim() : 'Nosso momento';
   const desc = (descEl && descEl.value.trim()) ? descEl.value.trim() : '';
 
-  // Foto opcional - usa comprimida
   let fotoFinal = momentoFotoTemp || '';
 
-  // Tenta salvar, com tratamento de quota exceeded
   try{
     const novo = {id:Date.now(), titulo:titulo, desc:desc, data:new Date().toLocaleDateString('pt-BR'), foto:fotoFinal};
     momentos.unshift(novo);
     localStorage.setItem('momentos', JSON.stringify(momentos));
-    // Limpa temp
     momentoFotoTemp=null;
     momentoFotoNome='';
     atualizarCoracoes();
     nav('momentos');
   }catch(quotaErr){
-    // Se estourar localStorage, tenta sem foto ou foto menor
     if(fotoFinal){
+      // Tenta sem foto
+      momentos.shift(); // remove o que tentou
       try{
-        // Tenta com qualidade menor
-        const novoSemFotoGrande = {id:Date.now(), titulo:titulo, desc:desc, data:new Date().toLocaleDateString('pt-BR'), foto:''};
-        // Remove foto do objeto e tenta
-        momentos.unshift(novoSemFotoGrande);
+        const novoSemFoto = {id:Date.now(), titulo:titulo, desc:desc, data:new Date().toLocaleDateString('pt-BR'), foto:''};
+        momentos.unshift(novoSemFoto);
         localStorage.setItem('momentos', JSON.stringify(momentos));
         momentoFotoTemp=null;
-        atualizarCoracoes();
         alert('Memória cheia, salvei sem foto. Apague momentos antigos para liberar espaço. ❤️');
         nav('momentos');
         return;
       }catch(e2){
-        // Remove mais antigos se ainda falhar
         momentos.pop();
-        try{
-          localStorage.setItem('momentos', JSON.stringify(momentos));
-        }catch(e3){}
         alert('Memória do navegador cheia. Apague alguns momentos antigos e tente novamente.');
         return;
       }
@@ -797,7 +907,6 @@ function salvarMomentoCorrigido(){
  }
 }
 
-// Mantem compatibilidade com funcao antiga chamada por outros lugares
 function salvarMomento(){ salvarMomentoCorrigido(); }
 
 
